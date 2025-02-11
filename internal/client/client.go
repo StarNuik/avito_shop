@@ -34,8 +34,10 @@ func (c *client) Auth(req dto.AuthRequest) (*dto.AuthResponse, error) {
 	}
 	defer httpResponse.Body.Close()
 
-	if httpResponse.StatusCode/100 != 2 {
-		return nil, unmarshalError(httpResponse.Body)
+	statusCode := httpResponse.StatusCode
+	if statusCode/100 != 2 {
+		err := unmarshalError(statusCode, httpResponse.Body)
+		return nil, fmt.Errorf("client.Auth: %w", err)
 	}
 
 	var resp dto.AuthResponse
@@ -56,7 +58,7 @@ func unmarshal(from io.Reader, v any) error {
 	return json.Unmarshal(bytes, v)
 }
 
-func unmarshalError(from io.Reader) error {
+func unmarshalError(code int, from io.Reader) error {
 	bytes, err := io.ReadAll(from)
 	if err != nil {
 		return err
@@ -68,5 +70,16 @@ func unmarshalError(from io.Reader) error {
 		return err
 	}
 
-	return fmt.Errorf("ErrorResponse: %s", dto.Errors)
+	switch code {
+	case 400:
+		err = dto.ErrBadRequest
+	case 401:
+		err = dto.ErrUnauthorized
+	case 500:
+		err = dto.ErrInternalServer
+	default:
+		return fmt.Errorf("unmarshalError: http code not supported")
+	}
+
+	return fmt.Errorf("%w: %s", dto.Errors)
 }

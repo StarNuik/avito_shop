@@ -1,4 +1,6 @@
-package db
+package domain
+
+import "context"
 
 type User struct {
 	Id           int64
@@ -26,8 +28,8 @@ type Purchase struct {
 	User int64
 }
 
-type Shop interface {
-	User(username string) User
+type ShopRepo interface {
+	User(ctx context.Context, username string) (*User, error)
 	//PurchasesOf(userId int64) []Purchase
 	//TransactionsOf(userId int64) []Transaction
 }

@@ -3,5 +3,6 @@ package domain
 import "fmt"
 
 var (
-	ErrNotFound error = fmt.Errorf("not found")
+	ErrNotFound  error = fmt.Errorf("not found")
+	ErrNotEnough       = fmt.Errorf("not enough")
 )

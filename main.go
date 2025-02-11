@@ -52,15 +52,26 @@ func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware) {
 	engine.POST("/api/auth", auth.LoginHandler)
 
 	authRequired := engine.Group("/api", auth.MiddlewareFunc())
-	authRequired.GET("/api/info")
+	authRequired.GET("/api/info", handler.Info)
 	authRequired.GET("/api/buy/{item}")
 	authRequired.POST("/api/sendCoin")
 }
 
 func Run() {
 	engine := gin.Default()
-	repo := infra.NewMockRepo()
 	log := new(infra.FmtLogger)
+	repo := infra.NewInmemRepo()
+	// TODO: remove this
+	repo.InsertUser(domain.User{
+		Id:           -1,
+		Username:     "admin",
+		PasswordHash: "admin",
+	})
+	repo.InsertUser(domain.User{
+		Id:           -2,
+		Username:     "test",
+		PasswordHash: "test",
+	})
 
 	auth := newJwt(repo, log)
 	engine.Use(handlerMiddleware(auth))

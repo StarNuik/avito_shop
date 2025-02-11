@@ -14,7 +14,6 @@ func TestAuth_UserExists_ReturnsUserId(t *testing.T) {
 	require := require.New(t)
 
 	user := domain.User{
-		Id:           42,
 		Username:     "username",
 		PasswordHash: "password",
 	}

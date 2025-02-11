@@ -3,12 +3,14 @@ package integration_test
 import (
 	"github.com/avito_shop/internal/client"
 	"github.com/avito_shop/internal/dto"
+	"github.com/avito_shop/internal/infra"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"testing"
 )
 
 const (
-	hostUri         = "http://localhost:8080"
+	hostUrl         = "http://localhost:8080"
 	usernameCorrect = "0x186A0"
 	passwordCorrect = "password"
 )
@@ -17,7 +19,7 @@ func Test_Auth_HappyPath_ReturnsToken(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	client := client.New(hostUri)
+	client := client.New(hostUrl)
 
 	// Act
 	req := dto.AuthRequest{
@@ -36,7 +38,7 @@ func Test_Auth_IncorrectUsername_Unauthorized(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	shop := client.New(hostUri)
+	shop := client.New(hostUrl)
 
 	// Act
 	req := dto.AuthRequest{
@@ -55,7 +57,7 @@ func Test_Auth_IncorrectPassword_Unauthorized(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	shop := client.New(hostUri)
+	shop := client.New(hostUrl)
 
 	// Act
 	req := dto.AuthRequest{
@@ -70,23 +72,19 @@ func Test_Auth_IncorrectPassword_Unauthorized(t *testing.T) {
 	require.ErrorIs(err, client.ErrUnauthorized)
 }
 
-//func Test_Auth_IncorrectDto_BadRequest(t *testing.T) {
-//    // Arrange
-//    require := require.New(t)
-//
-//    body := []byte("{}")
-//    reader := bytes.NewReader(body)
-//    response, err := http.Post(hostUri+"/api/auth", "application/json", reader)
-//
-//    // Act
-//    req := dto.AuthRequest{
-//        Username: usernameCorrect,
-//        Password: "bad password",
-//    }
-//
-//    _, err := client.Auth(req)
-//
-//    // Assert
-//    require.Error(err)
-//    require.ErrorIs(err, client.ErrUnauthorized)
-//}
+func Test_Auth_IncorrectDto_BadRequest(t *testing.T) {
+	// Arrange
+	require := require.New(t)
+
+	req := struct {
+		Nameuser string `json:"nameuser"`
+		Wordpass string `json:"wordpass"`
+	}{"user", "password"}
+
+	// Act
+	err := infra.HttpRequest(http.MethodPost, hostUrl+"/api/auth", nil, client.UnmarshalError, req, nil)
+
+	// Assert
+	require.Error(err)
+	require.ErrorIs(err, client.ErrBadRequest)
+}

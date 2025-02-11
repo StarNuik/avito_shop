@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/avito_shop/internal/domain"
 	"github.com/avito_shop/internal/dto"
@@ -8,31 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func LoginBadRequest(ctx *gin.Context, chain gin.HandlerFunc) {
+func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) (interface{}, error) {
 	var req dto.AuthRequest
 	err := ctx.BindJSON(&req)
 	if err != nil || len(req.Username) == 0 || len(req.Password) == 0 {
-		ctx.AbortWithStatusJSON(400, dto.ErrorResponse{
-			Errors: "incorrect AuthRequest json",
-		})
-		return
+		ctx.AbortWithStatus(400)
+		return nil, fmt.Errorf("incorrect AuthRequest json")
 	}
-	chain(ctx)
-}
-
-func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) (interface{}, error) {
-	var req dto.AuthRequest
-	_ = ctx.BindJSON(&req)
 
 	resp, err := domain.Auth(ctx, repo, req)
-	if err != nil {
-		log.LogError(err)
-		ctx.Status(500)
-		return nil, fmt.Errorf("internal server error")
-	}
-
-	if resp == nil {
+	if errors.Is(err, domain.ErrNotFound) {
 		return nil, fmt.Errorf("incorrect username or password")
+	} else if err != nil {
+		log.LogError(err)
+		ctx.AbortWithStatus(500)
+		return nil, fmt.Errorf("internal server error")
 	}
 
 	return resp, nil

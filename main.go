@@ -49,9 +49,7 @@ func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
 }
 
 func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware) {
-	engine.POST("/api/auth", func(ctx *gin.Context) {
-		handler.LoginBadRequest(ctx, auth.LoginHandler)
-	})
+	engine.POST("/api/auth", auth.LoginHandler)
 
 	authRequired := engine.Group("/api", auth.MiddlewareFunc())
 	authRequired.GET("/api/info")

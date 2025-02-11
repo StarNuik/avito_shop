@@ -1,0 +1,55 @@
+package domain_test
+
+import (
+	"context"
+	"github.com/avito_shop/internal/domain"
+	"github.com/avito_shop/internal/dto"
+	"github.com/avito_shop/internal/infra"
+	"github.com/stretchr/testify/require"
+	"testing"
+)
+
+func TestAuth_UserExists_ReturnsUserId(t *testing.T) {
+	// Arrange
+	require := require.New(t)
+
+	user := domain.User{
+		Id:           42,
+		Username:     "username",
+		PasswordHash: "password",
+	}
+
+	repo := infra.NewInmemRepo()
+	repo.InsertUser(user)
+
+	// Act
+	ctx := context.Background()
+	req := dto.AuthRequest{
+		Username: user.Username,
+		Password: user.PasswordHash,
+	}
+	jwt, err := domain.Auth(ctx, repo, req)
+
+	// Assert
+	require.NoError(err)
+	require.Equal(jwt.UserId, user.Id)
+}
+
+func TestAuth_NoUser_ErrNotFound(t *testing.T) {
+	// Arrange
+	require := require.New(t)
+
+	repo := infra.NewInmemRepo()
+
+	// Act
+	ctx := context.Background()
+	req := dto.AuthRequest{
+		Username: "doesnt matter",
+		Password: "doesnt matter",
+	}
+	_, err := domain.Auth(ctx, repo, req)
+
+	// Assert
+	require.Error(err)
+	require.ErrorIs(err, domain.ErrNotFound)
+}

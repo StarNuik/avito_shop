@@ -5,19 +5,16 @@ import (
 	"github.com/avito_shop/internal/dto"
 )
 
-// Auth *may* return a nil dto. That means the user isn't authorized
+// Auth returns `ErrNotFound` if it couldn't authorize a user
 func Auth(ctx context.Context, repo ShopRepo, req dto.AuthRequest) (*dto.JwtPayload, error) {
 	user, err := repo.User(ctx, req.Username)
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
-		return nil, nil
-	}
 
 	// TODO: password hashing
 	if req.Username != user.Username || req.Password != user.PasswordHash {
-		return nil, nil
+		return nil, ErrNotFound
 	}
 
 	return &dto.JwtPayload{

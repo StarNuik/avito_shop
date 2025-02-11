@@ -30,7 +30,7 @@ func newJwt(repo domain.ShopRepo, log infra.Logger) *jwt.GinJWTMiddleware {
 			return handler.Authenticator(ctx, repo, log)
 		},
 		//Authorizator:    nil,
-		//Unauthorized:    nil,
+		Unauthorized: handler.Unauthorized,
 	}
 	auth, err := jwt.New(&params)
 	if err != nil {
@@ -49,7 +49,9 @@ func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
 }
 
 func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware) {
-	engine.POST("/api/auth", auth.LoginHandler)
+	engine.POST("/api/auth", func(ctx *gin.Context) {
+		handler.LoginBadRequest(ctx, auth.LoginHandler)
+	})
 
 	authRequired := engine.Group("/api", auth.MiddlewareFunc())
 	authRequired.GET("/api/info")

@@ -1,13 +1,5 @@
 package dto
 
-import "fmt"
-
-var (
-	ErrUnauthorized   = fmt.Errorf("unauthorized")
-	ErrInternalServer = fmt.Errorf("internal server error")
-	ErrBadRequest     = fmt.Errorf("bad request")
-)
-
 type ErrorResponse struct {
 	Errors string `json:"errors"`
 }

@@ -9,6 +9,12 @@ import (
 	"net/http"
 )
 
+var (
+	ErrUnauthorized   = fmt.Errorf("unauthorized")
+	ErrInternalServer = fmt.Errorf("internal server error")
+	ErrBadRequest     = fmt.Errorf("bad request")
+)
+
 type client struct {
 	hostUri string
 }
@@ -72,14 +78,14 @@ func unmarshalError(code int, from io.Reader) error {
 
 	switch code {
 	case 400:
-		err = dto.ErrBadRequest
+		err = ErrBadRequest
 	case 401:
-		err = dto.ErrUnauthorized
+		err = ErrUnauthorized
 	case 500:
-		err = dto.ErrInternalServer
+		err = ErrInternalServer
 	default:
 		return fmt.Errorf("unmarshalError: http code not supported")
 	}
 
-	return fmt.Errorf("%w: %s", dto.Errors)
+	return fmt.Errorf("%w: %s", err, dto.Errors)
 }

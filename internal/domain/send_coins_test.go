@@ -8,6 +8,10 @@ import (
 	"testing"
 )
 
+func TestSendCoins_IncorrectUserId_ErrNotFound(t *testing.T) {
+	panic("not implemented")
+}
+
 func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	// Arrange
 	require := require.New(t)
@@ -113,6 +117,7 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	require.Len(repo.Operations, 3) // +1 for the balanceOp
 	require.Len(repo.Transfers, 1)
 
+	// require.Contains didn't work :(
 	srcOp := repo.Operations[repo.Transfers[0].SourceOp]
 	require.Equal(srcOp.User, userFrom.Id)
 	require.Equal(srcOp.Delta, -transferSum)
@@ -122,4 +127,8 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	require.Equal(destOp.User, userTo.Id)
 	require.Equal(destOp.Delta, transferSum)
 	require.Equal(destOp.Result, transferSum)
+}
+
+func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
+	panic("not implemented")
 }

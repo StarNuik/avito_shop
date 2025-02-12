@@ -26,21 +26,39 @@ func NewInmemRepo() *inmemRepository {
 	}
 }
 
-func (repo *inmemRepository) InsertUser(user domain.User) {
+func (repo *inmemRepository) InsertUser(user domain.User) domain.User {
 	id := int64(len(repo.Users))
 	user.Id = id
 	repo.Users[id] = user
+	return user
 }
 
-func (repo *inmemRepository) InsertInventory(item domain.InventoryEntry) {
+func (repo *inmemRepository) InsertInventory(item domain.InventoryEntry) domain.InventoryEntry {
 	id := int64(len(repo.Inventory))
 	item.Id = id
 	repo.Inventory[id] = item
+	return item
 }
 
-func (repo *inmemRepository) InsertBalanceOperation(op domain.BalanceOperation) {
+func (repo *inmemRepository) InsertBalanceOperation(op domain.BalanceOperation) domain.BalanceOperation {
 	tx, _ := repo.Begin(context.Background())
-	_, _ = tx.InsertBalanceOperation(op)
+	id, _ := tx.InsertBalanceOperation(op)
+	op.Id = id
+	return op
+}
+
+func (repo *inmemRepository) InsertTransfer(transfer domain.Transfer) domain.Transfer {
+	tx, _ := repo.Begin(context.Background())
+	id, _ := tx.InsertTransfer(transfer)
+	transfer.Id = id
+	return transfer
+}
+
+func (repo *inmemRepository) InsertPurchase(purchase domain.Purchase) domain.Purchase {
+	tx, _ := repo.Begin(context.Background())
+	id, _ := tx.InsertPurchase(purchase)
+	purchase.Id = id
+	return purchase
 }
 
 func (repo *inmemRepository) User(_ context.Context, username string) (domain.User, error) {
@@ -55,22 +73,21 @@ func (repo *inmemRepository) User(_ context.Context, username string) (domain.Us
 
 // user exists, but has no operation should return (0, nil)
 func (repo *inmemRepository) UserBalance(_ context.Context, userId int64) (int64, error) {
-	best := domain.BalanceOperation{Id: math.MinInt64}
-
 	if _, ok := repo.Users[userId]; !ok {
 		return 0, domain.ErrNotFound
 	}
 
-	for _, op := range repo.Operations {
-		if op.Id != userId {
+	last := domain.BalanceOperation{Id: math.MinInt64}
+
+	for idx := range len(repo.Operations) {
+		op := repo.Operations[int64(idx)]
+		if op.User != userId {
 			continue
 		}
-		if op.Id > best.Id {
-			best = op
-		}
+		last = op
 	}
 
-	return best.Result, nil
+	return last.Result, nil
 }
 
 func (repo *inmemRepository) InventoryItem(_ context.Context, itemName string) (domain.InventoryEntry, error) {
@@ -81,6 +98,72 @@ func (repo *inmemRepository) InventoryItem(_ context.Context, itemName string) (
 	}
 
 	return domain.InventoryEntry{}, domain.ErrNotFound
+}
+
+// select group sum()
+func (repo *inmemRepository) InventoryInfo(_ context.Context, userId int64) ([]domain.InventoryInfo, error) {
+	if _, ok := repo.Users[userId]; !ok {
+		return nil, domain.ErrNotFound
+	}
+
+	tmp := make(map[string]int64)
+
+	for _, item := range repo.Purchases {
+		if item.User != userId {
+			continue
+		}
+		inventory := repo.Inventory[item.Item]
+		tmp[inventory.Name]++
+	}
+
+	out := make([]domain.InventoryInfo, 0, len(tmp))
+	for name, quantity := range tmp {
+		item := domain.InventoryInfo{
+			Name:     name,
+			Quantity: quantity,
+		}
+		out = append(out, item)
+	}
+
+	return out, nil
+}
+
+func (repo *inmemRepository) BalanceInfo(_ context.Context, userId int64) ([]domain.BalanceInfo, error) {
+	if _, ok := repo.Users[userId]; !ok {
+		return nil, domain.ErrNotFound
+	}
+
+	out := []domain.BalanceInfo{}
+	// TODO: is this SQL-able? split this into two functions?
+	for idx := range len(repo.Transfers) {
+		transfer := repo.Transfers[int64(idx)]
+		srcOp := repo.Operations[transfer.SourceOp]
+		dstOp := repo.Operations[transfer.TargetOp]
+
+		srcUser := repo.Users[srcOp.User]
+		dstUser := repo.Users[dstOp.User]
+
+		if srcUser.Id != userId && dstUser.Id != userId {
+			continue
+		}
+
+		item := domain.BalanceInfo{}
+		switch userId {
+		case dstUser.Id:
+			item = domain.BalanceInfo{
+				ForeignUsername: srcUser.Username,
+				Delta:           -srcOp.Delta,
+			}
+		case srcUser.Id:
+			item = domain.BalanceInfo{
+				ForeignUsername: dstUser.Username,
+				Delta:           -dstOp.Delta,
+			}
+		}
+		out = append(out, item)
+	}
+
+	return out, nil
 }
 
 func (repo *inmemRepository) Begin(_ context.Context) (domain.ShopTx, error) {

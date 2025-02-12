@@ -8,6 +8,10 @@ import (
 	"testing"
 )
 
+func TestBuyItem_IncorrectUserId_ErrNotFound(t *testing.T) {
+	panic("not implemented")
+}
+
 func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)

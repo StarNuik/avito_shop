@@ -31,3 +31,13 @@ type Purchase struct {
 	User      int64
 	Operation int64
 }
+
+type InventoryInfo struct {
+	Name     string
+	Quantity int64
+}
+
+type BalanceInfo struct {
+	ForeignUsername string
+	Delta           int64
+}

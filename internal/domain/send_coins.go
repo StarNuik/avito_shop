@@ -2,12 +2,18 @@ package domain
 
 import "context"
 
-func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, userIdTo int64, transferSum int64) error {
+// SendCoins may send these errors: ErrNotAllowed, ErrNotEnough, ErrNotFound
+func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo string, transferSum int64) error {
 	if transferSum <= 0 {
 		return ErrNotAllowed
 	}
 
-	destBalance, err := repo.UserBalance(ctx, userIdTo)
+	destUser, err := repo.User(ctx, usernameTo)
+	if err != nil {
+		return err
+	}
+
+	destBalance, err := repo.UserBalance(ctx, destUser.Id)
 	if err != nil {
 		return err
 	}
@@ -38,7 +44,7 @@ func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, userIdTo in
 	}
 
 	destOp := BalanceOperation{
-		User:   userIdTo,
+		User:   destUser.Id,
 		Delta:  transferSum,
 		Result: destBalance + transferSum,
 	}

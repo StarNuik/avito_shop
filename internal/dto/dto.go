@@ -17,7 +17,11 @@ type JwtPayload struct {
 	UserId int64
 }
 
-// auto-generated
+type SendCoinRequest struct {
+	ToUser string `json:"toUser"`
+	Amount int64  `json:"amount"`
+}
+
 type InfoResponse struct {
 	Coins       int64           `json:"coins"`
 	Inventory   []InventoryInfo `json:"inventory"`

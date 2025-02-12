@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/avito_shop/internal/domain"
 	"github.com/avito_shop/internal/dto"
 	"github.com/avito_shop/internal/infra"
@@ -18,15 +19,55 @@ func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) (in
 	}
 
 	resp, err := domain.Auth(ctx, repo, req)
-	if errors.Is(err, domain.ErrNotFound) {
+	if domain.IsDomainError(err) {
 		return nil, fmt.Errorf("incorrect username or password")
 	} else if err != nil {
+		// TODO: trace id
 		log.LogError(err)
 		ctx.AbortWithStatus(500)
-		return nil, fmt.Errorf("internal server error")
+		return nil, fmt.Errorf("server error")
 	}
 
 	return resp, nil
+}
+
+func PackClaims(in interface{}) jwt.MapClaims {
+	payload, ok := in.(*dto.JwtPayload)
+	if !ok {
+		return jwt.MapClaims{}
+	}
+
+	bytes, err := json.Marshal(payload)
+	if err != nil {
+		// TODO
+		return jwt.MapClaims{}
+	}
+
+	return jwt.MapClaims{
+		infra.IdentityKey: payload.UserId,
+		"_payload":        string(bytes),
+	}
+}
+
+func UnpackClaims(ctx *gin.Context) interface{} {
+	claims := jwt.ExtractClaims(ctx)
+	obj, ok := claims["_payload"]
+	if !ok {
+		return nil
+	}
+
+	str, ok := obj.(string)
+	if !ok {
+		return nil
+	}
+
+	var payload dto.JwtPayload
+	err := json.Unmarshal([]byte(str), &payload)
+	if err != nil {
+		return nil
+	}
+
+	return &payload
 }
 
 func Unauthorized(c *gin.Context, code int, message string) {

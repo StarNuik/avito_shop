@@ -2,6 +2,7 @@ package domain
 
 import "context"
 
+// BuyItem may return these errors: NotEnough, NotFound
 func BuyItem(ctx context.Context, repo ShopRepo, userId int64, itemName string) error {
 	item, err := repo.InventoryItem(ctx, itemName)
 	if err != nil {

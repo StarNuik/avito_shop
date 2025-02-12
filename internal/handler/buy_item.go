@@ -7,14 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Info(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
+func BuyItem(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
 	jwt, err := infra.JwtPayload(ctx)
 	if err != nil {
 		ctx.JSON(401, dto.ErrorResponse{"incorrect jwt"})
 		return
 	}
 
-	out, err := domain.Info(ctx, repo, jwt.UserId)
+	// TODO: remove magic string?
+	itemName := ctx.Param("item")
+	if len(itemName) == 0 {
+		ctx.JSON(400, dto.ErrorResponse{"empty item name"})
+		return
+	}
+
+	err = domain.BuyItem(ctx, repo, jwt.UserId, itemName)
 	if domain.IsDomainError(err) {
 		ctx.JSON(400, dto.ErrorResponse{err.Error()})
 		return
@@ -25,5 +32,5 @@ func Info(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
 		return
 	}
 
-	ctx.JSON(200, out)
+	ctx.Status(200)
 }

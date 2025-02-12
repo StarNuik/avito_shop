@@ -17,15 +17,15 @@ func newJwt(repo domain.ShopRepo, log infra.Logger) *jwt.GinJWTMiddleware {
 		Key:           []byte("const: secret-key"),
 		Timeout:       0,
 		MaxRefresh:    0,
-		IdentityKey:   "const: identity-key",
+		IdentityKey:   "identity",
 		TokenLookup:   "header: Authorization, query: token, cookie: jwt",
 		TokenHeadName: "Bearer",
 		TimeFunc: func() time.Time {
 			return time.Now().UTC()
 		},
 
-		//IdentityHandler: nil,
-		//PayloadFunc:     nil,
+		PayloadFunc:     handler.PackClaims,
+		IdentityHandler: handler.UnpackClaims,
 		Authenticator: func(ctx *gin.Context) (interface{}, error) {
 			return handler.Authenticator(ctx, repo, log)
 		},
@@ -48,13 +48,19 @@ func handlerMiddleware(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
 	}
 }
 
-func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware) {
+func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopRepo, log infra.Logger) {
 	engine.POST("/api/auth", auth.LoginHandler)
 
 	authRequired := engine.Group("/api", auth.MiddlewareFunc())
-	authRequired.GET("/api/info", handler.Info)
-	authRequired.GET("/api/buy/{item}")
-	authRequired.POST("/api/sendCoin")
+	authRequired.GET("/info", func(ctx *gin.Context) {
+		handler.Info(ctx, repo, log)
+	})
+	authRequired.GET("/buy/:item", func(ctx *gin.Context) {
+		handler.BuyItem(ctx, repo, log)
+	})
+	authRequired.POST("/sendCoin", func(ctx *gin.Context) {
+		handler.SendCoins(ctx, repo, log)
+	})
 }
 
 func Run() {
@@ -62,21 +68,31 @@ func Run() {
 	log := new(infra.FmtLogger)
 	repo := infra.NewInmemRepo()
 	// TODO: remove this
-	repo.InsertUser(domain.User{
+	u1 := repo.InsertUser(domain.User{
 		Id:           -1,
 		Username:     "admin",
 		PasswordHash: "admin",
 	})
-	repo.InsertUser(domain.User{
+	u2 := repo.InsertUser(domain.User{
 		Id:           -2,
 		Username:     "test",
 		PasswordHash: "test",
+	})
+	repo.InsertBalanceOperation(domain.BalanceOperation{
+		User:   u1.Id,
+		Delta:  1000,
+		Result: 1000,
+	})
+	repo.InsertBalanceOperation(domain.BalanceOperation{
+		User:   u2.Id,
+		Delta:  1000,
+		Result: 1000,
 	})
 
 	auth := newJwt(repo, log)
 	engine.Use(handlerMiddleware(auth))
 
-	addRoutes(engine, auth)
+	addRoutes(engine, auth, repo, log)
 
 	_ = engine.Run()
 }

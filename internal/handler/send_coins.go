@@ -7,14 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Info(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
+func SendCoins(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
 	jwt, err := infra.JwtPayload(ctx)
 	if err != nil {
 		ctx.JSON(401, dto.ErrorResponse{"incorrect jwt"})
 		return
 	}
 
-	out, err := domain.Info(ctx, repo, jwt.UserId)
+	var req dto.SendCoinRequest
+	err = ctx.BindJSON(&req)
+	if err != nil {
+		ctx.JSON(400, dto.ErrorResponse{"incorrect SendCoinRequest json"})
+		return
+	}
+
+	err = domain.SendCoins(ctx, repo, jwt.UserId, req.ToUser, req.Amount)
 	if domain.IsDomainError(err) {
 		ctx.JSON(400, dto.ErrorResponse{err.Error()})
 		return
@@ -25,5 +32,5 @@ func Info(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
 		return
 	}
 
-	ctx.JSON(200, out)
+	ctx.Status(200)
 }

@@ -17,7 +17,7 @@ func TestSendCoins_IncorrectUserId_ErrNotFound(t *testing.T) {
 	// Act
 	transferSum := int64(100)
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, repo, -1, -1, transferSum)
+	err := domain.SendCoins(ctx, repo, -1, "", transferSum)
 
 	// Assert
 	require.ErrorIs(err, domain.ErrNotFound)
@@ -32,7 +32,7 @@ func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	// Act
 	transferSum := int64(-100)
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, repo, -1, -1, transferSum)
+	err := domain.SendCoins(ctx, repo, -1, "", transferSum)
 
 	// Assert
 	require.ErrorIs(err, domain.ErrNotAllowed)
@@ -52,7 +52,7 @@ func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 
 	// Act
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, repo, userFrom.Id, -1, 100)
+	err := domain.SendCoins(ctx, repo, userFrom.Id, "", 100)
 
 	// Assert
 	require.ErrorIs(err, domain.ErrNotFound)
@@ -84,7 +84,7 @@ func TestSendCoins_LowBalance_ErrNotEnough(t *testing.T) {
 	// Act
 	transferSum := int64(100)
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, repo, userFrom.Id, userTo.Id, transferSum)
+	err := domain.SendCoins(ctx, repo, userFrom.Id, userTo.Username, transferSum)
 
 	// Assert
 	require.ErrorIs(err, domain.ErrNotEnough)
@@ -116,7 +116,7 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	// Act
 	transferSum := int64(100)
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, repo, userFrom.Id, userTo.Id, transferSum)
+	err := domain.SendCoins(ctx, repo, userFrom.Id, userTo.Username, transferSum)
 
 	// Assert
 	require.NoError(err)
@@ -164,12 +164,12 @@ func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
 	// Act
 	ctx := context.Background()
 
-	_ = domain.SendCoins(ctx, repo, users[0].Id, users[1].Id, 50)
-	_ = domain.SendCoins(ctx, repo, users[0].Id, users[2].Id, 50)
-	_ = domain.SendCoins(ctx, repo, users[1].Id, users[0].Id, 100)
-	_ = domain.SendCoins(ctx, repo, users[1].Id, users[2].Id, 100)
-	_ = domain.SendCoins(ctx, repo, users[2].Id, users[0].Id, 500)
-	_ = domain.SendCoins(ctx, repo, users[2].Id, users[1].Id, 500)
+	_ = domain.SendCoins(ctx, repo, users[0].Id, users[1].Username, 50)
+	_ = domain.SendCoins(ctx, repo, users[0].Id, users[2].Username, 50)
+	_ = domain.SendCoins(ctx, repo, users[1].Id, users[0].Username, 100)
+	_ = domain.SendCoins(ctx, repo, users[1].Id, users[2].Username, 100)
+	_ = domain.SendCoins(ctx, repo, users[2].Id, users[0].Username, 500)
+	_ = domain.SendCoins(ctx, repo, users[2].Id, users[1].Username, 500)
 
 	// Assert
 	require.Len(repo.Transfers, 6)

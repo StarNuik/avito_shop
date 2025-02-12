@@ -9,7 +9,17 @@ import (
 )
 
 func TestBuyItem_IncorrectUserId_ErrNotFound(t *testing.T) {
-	panic("not implemented")
+	// Arrange
+	require := require.New(t)
+
+	repo := infra.NewInmemRepo()
+
+	// Act
+	ctx := context.Background()
+	err := domain.BuyItem(ctx, repo, -1, "doesnt exist")
+
+	// Assert
+	require.ErrorIs(err, domain.ErrNotFound)
 }
 
 func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
@@ -17,13 +27,11 @@ func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
 	require := require.New(t)
 
 	user := domain.User{
-		Username:     "username",
-		PasswordHash: "password",
+		Username: "username",
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(user)
-	user = repo.Users[0]
+	user = repo.InsertUser(user)
 
 	// Act
 	ctx := context.Background()
@@ -39,8 +47,7 @@ func TestBuyItem_NotEnoughCoins_ErrNotEnough(t *testing.T) {
 	require := require.New(t)
 
 	user := domain.User{
-		Username:     "username",
-		PasswordHash: "password",
+		Username: "username",
 	}
 	item := domain.InventoryEntry{
 		Name:  "buy-me",
@@ -48,10 +55,9 @@ func TestBuyItem_NotEnoughCoins_ErrNotEnough(t *testing.T) {
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(user)
-	repo.InsertInventory(item)
-	user = repo.Users[0]
-	item = repo.Inventory[0]
+
+	user = repo.InsertUser(user)
+	item = repo.InsertInventory(item)
 
 	// Act
 	ctx := context.Background()
@@ -67,8 +73,7 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 	require := require.New(t)
 
 	user := domain.User{
-		Username:     "username",
-		PasswordHash: "password",
+		Username: "username",
 	}
 	item := domain.InventoryEntry{
 		Name:  "buy-me",
@@ -81,12 +86,9 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(user)
-	repo.InsertInventory(item)
-	repo.InsertBalanceOperation(balanceOp)
-	user = repo.Users[0]
-	item = repo.Inventory[0]
-	balanceOp = repo.Operations[0]
+	user = repo.InsertUser(user)
+	item = repo.InsertInventory(item)
+	balanceOp = repo.InsertBalanceOperation(balanceOp)
 
 	// Act
 	ctx := context.Background()

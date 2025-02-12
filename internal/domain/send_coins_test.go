@@ -9,17 +9,30 @@ import (
 )
 
 func TestSendCoins_IncorrectUserId_ErrNotFound(t *testing.T) {
-	panic("not implemented")
+	// Arrange
+	require := require.New(t)
+
+	repo := infra.NewInmemRepo()
+
+	// Act
+	transferSum := int64(100)
+	ctx := context.Background()
+	err := domain.SendCoins(ctx, repo, -1, -1, transferSum)
+
+	// Assert
+	require.ErrorIs(err, domain.ErrNotFound)
 }
 
 func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
+	repo := infra.NewInmemRepo()
+
 	// Act
 	transferSum := int64(-100)
 	ctx := context.Background()
-	err := domain.SendCoins(ctx, nil, -1, -1, transferSum)
+	err := domain.SendCoins(ctx, repo, -1, -1, transferSum)
 
 	// Assert
 	require.ErrorIs(err, domain.ErrNotAllowed)
@@ -35,8 +48,7 @@ func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(userFrom)
-	userFrom = repo.Users[0]
+	userFrom = repo.InsertUser(userFrom)
 
 	// Act
 	ctx := context.Background()
@@ -65,12 +77,9 @@ func TestSendCoins_LowBalance_ErrNotEnough(t *testing.T) {
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(userFrom)
-	repo.InsertUser(userTo)
-	repo.InsertBalanceOperation(balanceOp)
-	userFrom = repo.Users[0]
-	userTo = repo.Users[1]
-	balanceOp = repo.Operations[0]
+	userFrom = repo.InsertUser(userFrom)
+	userTo = repo.InsertUser(userTo)
+	balanceOp = repo.InsertBalanceOperation(balanceOp)
 
 	// Act
 	transferSum := int64(100)
@@ -100,12 +109,9 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	}
 
 	repo := infra.NewInmemRepo()
-	repo.InsertUser(userFrom)
-	repo.InsertUser(userTo)
-	repo.InsertBalanceOperation(balanceOp)
-	userFrom = repo.Users[0]
-	userTo = repo.Users[1]
-	balanceOp = repo.Operations[0]
+	userFrom = repo.InsertUser(userFrom)
+	userTo = repo.InsertUser(userTo)
+	balanceOp = repo.InsertBalanceOperation(balanceOp)
 
 	// Act
 	transferSum := int64(100)
@@ -130,5 +136,50 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 }
 
 func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
-	panic("not implemented")
+	// Arrange
+	require := require.New(t)
+
+	repo := infra.NewInmemRepo()
+	users := []domain.User{
+		repo.InsertUser(domain.User{Username: "user1"}),
+		repo.InsertUser(domain.User{Username: "user2"}),
+		repo.InsertUser(domain.User{Username: "user3"}),
+	}
+	repo.InsertBalanceOperation(domain.BalanceOperation{
+		User:   users[0].Id,
+		Delta:  1000,
+		Result: 1000,
+	})
+	repo.InsertBalanceOperation(domain.BalanceOperation{
+		User:   users[1].Id,
+		Delta:  1000,
+		Result: 1000,
+	})
+	repo.InsertBalanceOperation(domain.BalanceOperation{
+		User:   users[2].Id,
+		Delta:  1000,
+		Result: 1000,
+	})
+
+	// Act
+	ctx := context.Background()
+
+	_ = domain.SendCoins(ctx, repo, users[0].Id, users[1].Id, 50)
+	_ = domain.SendCoins(ctx, repo, users[0].Id, users[2].Id, 50)
+	_ = domain.SendCoins(ctx, repo, users[1].Id, users[0].Id, 100)
+	_ = domain.SendCoins(ctx, repo, users[1].Id, users[2].Id, 100)
+	_ = domain.SendCoins(ctx, repo, users[2].Id, users[0].Id, 500)
+	_ = domain.SendCoins(ctx, repo, users[2].Id, users[1].Id, 500)
+
+	// Assert
+	require.Len(repo.Transfers, 6)
+
+	balance0, _ := repo.UserBalance(ctx, users[0].Id)
+	require.Equal(balance0, int64(1000-2*50+100+500))
+
+	balance1, _ := repo.UserBalance(ctx, users[1].Id)
+	require.Equal(balance1, int64(1000-2*100+50+500))
+
+	balance2, _ := repo.UserBalance(ctx, users[2].Id)
+	require.Equal(balance2, int64(1000-2*500+50+100))
 }

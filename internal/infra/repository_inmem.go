@@ -53,8 +53,13 @@ func (repo *inmemRepository) User(_ context.Context, username string) (domain.Us
 	return domain.User{}, domain.ErrNotFound
 }
 
-func (repo *inmemRepository) UserBalance(ctx context.Context, userId int64) (int64, error) {
+// user exists, but has no operation should return (0, nil)
+func (repo *inmemRepository) UserBalance(_ context.Context, userId int64) (int64, error) {
 	best := domain.BalanceOperation{Id: math.MinInt64}
+
+	if _, ok := repo.Users[userId]; !ok {
+		return 0, domain.ErrNotFound
+	}
 
 	for _, op := range repo.Operations {
 		if op.Id != userId {
@@ -68,7 +73,7 @@ func (repo *inmemRepository) UserBalance(ctx context.Context, userId int64) (int
 	return best.Result, nil
 }
 
-func (repo *inmemRepository) InventoryItem(ctx context.Context, itemName string) (domain.InventoryEntry, error) {
+func (repo *inmemRepository) InventoryItem(_ context.Context, itemName string) (domain.InventoryEntry, error) {
 	for _, item := range repo.Inventory {
 		if item.Name == itemName {
 			return item, nil
@@ -78,7 +83,7 @@ func (repo *inmemRepository) InventoryItem(ctx context.Context, itemName string)
 	return domain.InventoryEntry{}, domain.ErrNotFound
 }
 
-func (repo *inmemRepository) Begin(ctx context.Context) (domain.ShopTx, error) {
+func (repo *inmemRepository) Begin(_ context.Context) (domain.ShopTx, error) {
 	return &inmemTx{repo, false}, nil
 }
 

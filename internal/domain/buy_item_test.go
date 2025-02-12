@@ -19,6 +19,7 @@ func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
 
 	repo := infra.NewInmemRepo()
 	repo.InsertUser(user)
+	user = repo.Users[0]
 
 	// Act
 	ctx := context.Background()
@@ -45,6 +46,8 @@ func TestBuyItem_NotEnoughCoins_ErrNotEnough(t *testing.T) {
 	repo := infra.NewInmemRepo()
 	repo.InsertUser(user)
 	repo.InsertInventory(item)
+	user = repo.Users[0]
+	item = repo.Inventory[0]
 
 	// Act
 	ctx := context.Background()
@@ -77,6 +80,9 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 	repo.InsertUser(user)
 	repo.InsertInventory(item)
 	repo.InsertBalanceOperation(balanceOp)
+	user = repo.Users[0]
+	item = repo.Inventory[0]
+	balanceOp = repo.Operations[0]
 
 	// Act
 	ctx := context.Background()
@@ -84,7 +90,7 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Len(repo.Operations, 2)
+	require.Len(repo.Operations, 2) // +1 for the balanceOp
 	require.Equal(repo.Operations[1].Delta, -item.Price)
 	require.Equal(repo.Operations[1].Result, balanceOp.Result-item.Price)
 	require.Len(repo.Purchases, 1)

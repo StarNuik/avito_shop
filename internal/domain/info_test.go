@@ -170,3 +170,7 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 		Quantity: 1,
 	})
 }
+
+func TestInfo_CoinHistoryOrder_NewFirst(t *testing.T) {
+	panic("not implemented")
+}

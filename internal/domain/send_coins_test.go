@@ -38,6 +38,9 @@ func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	require.ErrorIs(err, domain.ErrNotAllowed)
 }
 
+func TestSendCoins_TargetIsUser_ErrNotAllowed(t *testing.T) {
+	panic("not implemented")
+}
 func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)

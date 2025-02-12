@@ -33,6 +33,8 @@ func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, e
 		return dto.InfoResponse{}, err
 	}
 
+	out.CoinHistory.Received = make([]dto.BalanceDebitInfo, 0)
+	out.CoinHistory.Sent = make([]dto.BalanceCreditInfo, 0)
 	for _, op := range balance {
 		if op.Delta >= 0 {
 			dto := dto.BalanceDebitInfo{

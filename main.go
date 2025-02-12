@@ -63,9 +63,7 @@ func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopR
 	})
 }
 
-func Run() {
-	engine := gin.Default()
-	log := new(infra.FmtLogger)
+func TestRepo() domain.ShopRepo {
 	repo := infra.NewInmemRepo()
 	// TODO: remove this
 	u1 := repo.InsertUser(domain.User{
@@ -88,6 +86,15 @@ func Run() {
 		Delta:  1000,
 		Result: 1000,
 	})
+	repo.InsertInventory(domain.InventoryEntry{Name: "hoodie", Price: 100})
+	repo.InsertInventory(domain.InventoryEntry{Name: "keychain", Price: 10})
+	return repo
+}
+
+func Run() {
+	engine := gin.Default()
+	log := new(infra.FmtLogger)
+	repo := TestRepo()
 
 	auth := newJwt(repo, log)
 	engine.Use(handlerMiddleware(auth))

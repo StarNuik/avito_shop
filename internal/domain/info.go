@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"github.com/avito_shop/internal/dto"
+	"slices"
 )
 
 func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, error) {
@@ -50,6 +51,8 @@ func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, e
 			out.CoinHistory.Sent = append(out.CoinHistory.Sent, dto)
 		}
 	}
+	slices.Reverse(out.CoinHistory.Received)
+	slices.Reverse(out.CoinHistory.Sent)
 
 	return out, nil
 }

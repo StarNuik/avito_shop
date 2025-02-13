@@ -13,6 +13,10 @@ func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo 
 		return err
 	}
 
+	if destUser.Id == userIdFrom {
+		return ErrNotAllowed
+	}
+
 	destBalance, err := repo.UserBalance(ctx, destUser.Id)
 	if err != nil {
 		return err

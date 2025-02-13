@@ -38,16 +38,12 @@ func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	require.ErrorIs(err, domain.ErrNotAllowed)
 }
 
-func TestSendCoins_TargetIsUser_ErrNotAllowed(t *testing.T) {
-	panic("not implemented")
-}
 func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
 	userFrom := domain.User{
-		Username:     "username",
-		PasswordHash: "password",
+		Username: "username",
 	}
 
 	repo := infra.NewInmemRepo()
@@ -61,17 +57,41 @@ func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 	require.ErrorIs(err, domain.ErrNotFound)
 }
 
+func TestSendCoins_TargetIsUser_ErrNotAllowed(t *testing.T) {
+	// Arrange
+	require := require.New(t)
+
+	user := domain.User{
+		Username: "username",
+	}
+	balanceOp := domain.BalanceOperation{
+		User:   user.Id,
+		Delta:  500,
+		Result: 500,
+	}
+
+	repo := infra.NewInmemRepo()
+	user = repo.InsertUser(user)
+	balanceOp = repo.InsertBalanceOperation(balanceOp)
+
+	// Act
+	transferSum := int64(100)
+	ctx := context.Background()
+	err := domain.SendCoins(ctx, repo, user.Id, user.Username, transferSum)
+
+	// Assert
+	require.ErrorIs(err, domain.ErrNotAllowed)
+}
+
 func TestSendCoins_LowBalance_ErrNotEnough(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
 	userFrom := domain.User{
-		Username:     "username1",
-		PasswordHash: "password",
+		Username: "username1",
 	}
 	userTo := domain.User{
-		Username:     "username2",
-		PasswordHash: "password",
+		Username: "username2",
 	}
 	balanceOp := domain.BalanceOperation{
 		User:   userFrom.Id,
@@ -98,12 +118,10 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	require := require.New(t)
 
 	userFrom := domain.User{
-		Username:     "username1",
-		PasswordHash: "password",
+		Username: "username1",
 	}
 	userTo := domain.User{
-		Username:     "username2",
-		PasswordHash: "password",
+		Username: "username2",
 	}
 	balanceOp := domain.BalanceOperation{
 		User:   userFrom.Id,

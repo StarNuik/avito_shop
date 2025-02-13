@@ -4,52 +4,46 @@ import (
 	"github.com/avito_shop/internal/client"
 	"github.com/avito_shop/internal/dto"
 	"github.com/avito_shop/internal/infra"
+	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
-)
-
-const (
-	hostUrl         = "http://localhost:8080"
-	usernameCorrect = "0x186A0"
-	passwordCorrect = "password"
 )
 
 func Test_Auth_HappyPath_ReturnsToken(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	client := client.New(hostUrl)
+	client := client.New(shoptest.HostUrl)
 
 	// Act
 	req := dto.AuthRequest{
-		Username: usernameCorrect,
-		Password: passwordCorrect,
+		Username: shoptest.Username,
+		Password: shoptest.Password,
 	}
 
 	resp, err := client.Auth(req)
 
 	// Assert
 	require.NoError(err)
-	require.NotNil(resp)
+	require.NotEmpty(resp.Token)
 }
 
 func Test_Auth_IncorrectUsername_Unauthorized(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	shop := client.New(hostUrl)
+	shop := client.New(shoptest.HostUrl)
 
 	// Act
 	req := dto.AuthRequest{
 		Username: "incorrect username",
-		Password: passwordCorrect,
+		Password: shoptest.Password,
 	}
 
 	_, err := shop.Auth(req)
 
 	// Assert
-	require.Error(err)
 	require.ErrorIs(err, client.ErrUnauthorized)
 }
 
@@ -57,11 +51,11 @@ func Test_Auth_IncorrectPassword_Unauthorized(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	shop := client.New(hostUrl)
+	shop := client.New(shoptest.HostUrl)
 
 	// Act
 	req := dto.AuthRequest{
-		Username: usernameCorrect,
+		Username: shoptest.Username,
 		Password: "bad password",
 	}
 
@@ -82,7 +76,12 @@ func Test_Auth_IncorrectDto_BadRequest(t *testing.T) {
 	}{"user", "password"}
 
 	// Act
-	err := infra.HttpRequest(http.MethodPost, hostUrl+"/api/auth", nil, client.UnmarshalError, req, nil)
+	err := infra.HttpRequest(http.MethodPost,
+		shoptest.HostUrl+"/api/auth",
+		nil,
+		client.UnmarshalError,
+		req,
+		nil)
 
 	// Assert
 	require.Error(err)

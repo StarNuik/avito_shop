@@ -52,3 +52,27 @@ func TestAuth_UserExists_ReturnsUserId(t *testing.T) {
 	require.NoError(err)
 	require.Equal(jwt.UserId, user.Id)
 }
+
+func TestAuth_IncorrectLogin_ErrNotFound(t *testing.T) {
+	// Arrange
+	require := require.New(t)
+
+	user := domain.User{
+		Username:     "username",
+		PasswordHash: "password",
+	}
+
+	repo := infra.NewInmemRepo()
+	repo.InsertUser(user)
+
+	// Act
+	ctx := context.Background()
+	req := dto.AuthRequest{
+		Username: user.Username,
+		Password: "incorrect password",
+	}
+	_, err := domain.Auth(ctx, repo, req)
+
+	// Assert
+	require.ErrorIs(err, domain.ErrNotFound)
+}

@@ -20,12 +20,19 @@ func (c *client) url(suffix string) string {
 	return c.hostUrl + suffix
 }
 
-func (c *client) Auth(req dto.AuthRequest) (*dto.AuthResponse, error) {
-	resp := &dto.AuthResponse{}
+func (c *client) Auth(req dto.AuthRequest) (dto.AuthResponse, error) {
+	out := dto.AuthResponse{}
 	url := c.url("/api/auth")
-	err := infra.HttpRequest(http.MethodPost, url, nil, UnmarshalError, req, resp)
-	if err != nil {
-		return nil, err
+	err := infra.HttpRequest(http.MethodPost, url, nil, UnmarshalError, req, &out)
+	return out, err
+}
+
+func (c *client) Info(auth dto.AuthResponse) (dto.InfoResponse, error) {
+	out := dto.InfoResponse{}
+	url := c.url("/api/info")
+	headers := map[string]string{
+		"Authorization": "Bearer" + auth.Token,
 	}
-	return resp, nil
+	err := infra.HttpRequest(http.MethodGet, url, headers, UnmarshalError, nil, &out)
+	return out, err
 }

@@ -153,14 +153,16 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 	// Assert
 	require.NoError(err)
 	require.Equal(have.Coins, int64(580))
-	require.Len(have.Inventory, 2)
+
 	require.Len(have.CoinHistory.Sent, 1)
 	require.Equal(have.CoinHistory.Sent[0].Amount, int64(500))
 	require.Equal(have.CoinHistory.Sent[0].ToUser, usersForeign[0].Username)
+
 	require.Len(have.CoinHistory.Received, 1)
 	require.Equal(have.CoinHistory.Received[0].Amount, int64(200))
 	require.Equal(have.CoinHistory.Received[0].FromUser, usersForeign[1].Username)
 
+	require.Len(have.Inventory, 2)
 	require.Contains(have.Inventory, dto.InventoryInfo{
 		Type:     inventory[0].Name,
 		Quantity: 2,
@@ -172,5 +174,112 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 }
 
 func TestInfo_CoinHistoryOrder_NewFirst(t *testing.T) {
-	panic("not implemented")
+	// Arrange
+	require := require.New(t)
+
+	repo := infra.NewInmemRepo()
+	user := repo.InsertUser(domain.User{Username: "username"})
+
+	usersForeign := []domain.User{
+		repo.InsertUser(domain.User{Username: "foreign1"}),
+		repo.InsertUser(domain.User{Username: "foreign2"}),
+	}
+
+	balanceOps := []domain.BalanceOperation{
+		// init
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   user.Id,
+			Delta:  1000,
+			Result: 1000,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[0].Id,
+			Delta:  1000,
+			Result: 1000,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[1].Id,
+			Delta:  1000,
+			Result: 1000,
+		}),
+		// transfer 1 send
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   user.Id,
+			Delta:  -500,
+			Result: 500,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[0].Id,
+			Delta:  500,
+			Result: 1500,
+		}),
+		// transfer 2 receive
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[1].Id,
+			Delta:  -200,
+			Result: 800,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   user.Id,
+			Delta:  200,
+			Result: 700,
+		}),
+		// transfer 3 send
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   user.Id,
+			Delta:  -100,
+			Result: 600,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[0].Id,
+			Delta:  100,
+			Result: 1600,
+		}),
+		// transfer 4 receive
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   usersForeign[1].Id,
+			Delta:  -500,
+			Result: 300,
+		}),
+		repo.InsertBalanceOperation(domain.BalanceOperation{
+			User:   user.Id,
+			Delta:  500,
+			Result: 1100,
+		}),
+	}
+
+	_ = []domain.Transfer{
+		repo.InsertTransfer(domain.Transfer{
+			SourceOp: balanceOps[3].Id, TargetOp: balanceOps[4].Id,
+		}),
+		repo.InsertTransfer(domain.Transfer{
+			SourceOp: balanceOps[5].Id, TargetOp: balanceOps[6].Id,
+		}),
+		repo.InsertTransfer(domain.Transfer{
+			SourceOp: balanceOps[7].Id, TargetOp: balanceOps[8].Id,
+		}),
+		repo.InsertTransfer(domain.Transfer{
+			SourceOp: balanceOps[9].Id, TargetOp: balanceOps[10].Id,
+		}),
+	}
+
+	// Act
+	ctx := context.Background()
+	have, err := domain.Info(ctx, repo, user.Id)
+
+	// Assert
+	require.NoError(err)
+	require.Equal(have.Coins, int64(1100))
+
+	require.Len(have.CoinHistory.Sent, 2)
+	require.Equal(have.CoinHistory.Sent[0].Amount, int64(100))
+	require.Equal(have.CoinHistory.Sent[0].ToUser, usersForeign[0].Username)
+	require.Equal(have.CoinHistory.Sent[1].Amount, int64(500))
+	require.Equal(have.CoinHistory.Sent[1].ToUser, usersForeign[0].Username)
+
+	require.Len(have.CoinHistory.Received, 2)
+	require.Equal(have.CoinHistory.Received[0].Amount, int64(500))
+	require.Equal(have.CoinHistory.Received[0].FromUser, usersForeign[1].Username)
+	require.Equal(have.CoinHistory.Received[1].Amount, int64(200))
+	require.Equal(have.CoinHistory.Received[1].FromUser, usersForeign[1].Username)
 }

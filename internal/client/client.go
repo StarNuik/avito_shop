@@ -7,12 +7,25 @@ import (
 )
 
 type client struct {
-	hostUrl string
+	hostUrl   string
+	roundtrip infra.RoundtripHandler
 }
 
-func New(hostUri string) *client {
+func New(hostUrl string) *client {
 	return &client{
-		hostUrl: hostUri,
+		hostUrl: hostUrl,
+	}
+}
+
+// TODO: refactor?
+// type Client interface
+// type Impl struct
+// func New() Client
+
+func WithRoundtrip(hostUrl string, roundtrip infra.RoundtripHandler) *client {
+	return &client{
+		hostUrl:   hostUrl,
+		roundtrip: roundtrip,
 	}
 }
 
@@ -22,17 +35,36 @@ func (c *client) url(suffix string) string {
 
 func (c *client) Auth(req dto.AuthRequest) (dto.AuthResponse, error) {
 	out := dto.AuthResponse{}
+
 	url := c.url("/api/auth")
-	err := infra.HttpRequest(http.MethodPost, url, nil, UnmarshalError, req, &out)
+	httpReq := infra.HttpRequest{
+		Method:         http.MethodPost,
+		Url:            url,
+		In:             req,
+		Out:            &out,
+		UnmarshalError: UnmarshalError,
+		HttpRoundtrip:  c.roundtrip,
+	}
+	err := infra.DoHttp(httpReq)
 	return out, err
 }
 
 func (c *client) Info(auth dto.AuthResponse) (dto.InfoResponse, error) {
 	out := dto.InfoResponse{}
+
 	url := c.url("/api/info")
 	headers := map[string]string{
-		"Authorization": "Bearer" + auth.Token,
+		"Authorization": "Bearer" + " " + auth.Token,
 	}
-	err := infra.HttpRequest(http.MethodGet, url, headers, UnmarshalError, nil, &out)
+	httpReq := infra.HttpRequest{
+		Method:         http.MethodGet,
+		Url:            url,
+		Headers:        headers,
+		In:             nil,
+		Out:            &out,
+		UnmarshalError: UnmarshalError,
+		HttpRoundtrip:  c.roundtrip,
+	}
+	err := infra.DoHttp(httpReq)
 	return out, err
 }

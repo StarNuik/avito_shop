@@ -28,7 +28,7 @@ func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger, has
 		return nil, fmt.Errorf("server error")
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
 func PackClaims(in interface{}) jwt.MapClaims {

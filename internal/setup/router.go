@@ -1,4 +1,4 @@
-package init
+package setup
 
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"

@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"github.com/avito_shop/internal/client"
 	"github.com/avito_shop/internal/dto"
+	"github.com/avito_shop/internal/setup"
 	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -12,7 +13,9 @@ func Test_InfoScenario(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	client := client.New(shoptest.HostUrl)
+	router := setup.Router()
+	roundtrip := shoptest.NewGinRoundtrip(router)
+	client := client.WithRoundtrip("", roundtrip)
 
 	// Act
 	authReq := dto.AuthRequest{

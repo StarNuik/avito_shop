@@ -1,6 +1,8 @@
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 // SendCoins may send these errors: ErrNotAllowed, ErrNotEnough, ErrNotFound
 func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo string, transferSum int64) error {

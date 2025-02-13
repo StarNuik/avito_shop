@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/avito_shop/internal/domain"
 	"github.com/avito_shop/internal/dto"
-	"github.com/avito_shop/internal/infra"
+	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestInfo_IncorrectUserId_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 
 	// Act
 	ctx := context.Background()
@@ -31,7 +31,7 @@ func TestInfo_NewUser_NoErrors(t *testing.T) {
 		Username:     "username",
 		PasswordHash: "password",
 	}
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user = repo.InsertUser(user)
 
 	// Act
@@ -50,7 +50,7 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user := repo.InsertUser(domain.User{Username: "username"})
 
 	usersForeign := []domain.User{
@@ -177,7 +177,7 @@ func TestInfo_CoinHistoryOrder_NewFirst(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user := repo.InsertUser(domain.User{Username: "username"})
 
 	usersForeign := []domain.User{

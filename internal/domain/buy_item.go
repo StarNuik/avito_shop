@@ -1,6 +1,8 @@
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 // BuyItem may return these errors: NotEnough, NotFound
 func BuyItem(ctx context.Context, repo ShopRepo, userId int64, itemName string) error {

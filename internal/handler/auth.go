@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) (interface{}, error) {
+func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger, hash domain.PasswordHash) (interface{}, error) {
 	var req dto.AuthRequest
 	err := ctx.BindJSON(&req)
 	if err != nil || len(req.Username) == 0 || len(req.Password) == 0 {
@@ -18,7 +18,7 @@ func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) (in
 		return nil, fmt.Errorf("incorrect AuthRequest json")
 	}
 
-	resp, err := domain.Auth(ctx, repo, req)
+	resp, err := domain.Auth(ctx, repo, hash, req)
 	if domain.IsDomainError(err) {
 		return nil, fmt.Errorf("incorrect username or password")
 	} else if err != nil {

@@ -3,7 +3,7 @@ package domain_test
 import (
 	"context"
 	"github.com/avito_shop/internal/domain"
-	"github.com/avito_shop/internal/infra"
+	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestBuyItem_IncorrectUserId_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 
 	// Act
 	ctx := context.Background()
@@ -30,7 +30,7 @@ func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
 		Username: "username",
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user = repo.InsertUser(user)
 
 	// Act
@@ -54,7 +54,7 @@ func TestBuyItem_NotEnoughCoins_ErrNotEnough(t *testing.T) {
 		Price: 100,
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 
 	user = repo.InsertUser(user)
 	item = repo.InsertInventory(item)
@@ -85,7 +85,7 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 		Result: 1000,
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user = repo.InsertUser(user)
 	item = repo.InsertInventory(item)
 	balanceOp = repo.InsertBalanceOperation(balanceOp)

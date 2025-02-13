@@ -3,7 +3,7 @@ package domain_test
 import (
 	"context"
 	"github.com/avito_shop/internal/domain"
-	"github.com/avito_shop/internal/infra"
+	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestSendCoins_IncorrectUserId_ErrNotFound(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 
 	// Act
 	transferSum := int64(100)
@@ -27,7 +27,7 @@ func TestSendCoins_TransferSumLteZero_ErrNotAllowed(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 
 	// Act
 	transferSum := int64(-100)
@@ -46,7 +46,7 @@ func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 		Username: "username",
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	userFrom = repo.InsertUser(userFrom)
 
 	// Act
@@ -70,7 +70,7 @@ func TestSendCoins_TargetIsUser_ErrNotAllowed(t *testing.T) {
 		Result: 500,
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	user = repo.InsertUser(user)
 	balanceOp = repo.InsertBalanceOperation(balanceOp)
 
@@ -99,7 +99,7 @@ func TestSendCoins_LowBalance_ErrNotEnough(t *testing.T) {
 		Result: 50,
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	userFrom = repo.InsertUser(userFrom)
 	userTo = repo.InsertUser(userTo)
 	balanceOp = repo.InsertBalanceOperation(balanceOp)
@@ -129,7 +129,7 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 		Result: 1000,
 	}
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	userFrom = repo.InsertUser(userFrom)
 	userTo = repo.InsertUser(userTo)
 	balanceOp = repo.InsertBalanceOperation(balanceOp)
@@ -160,7 +160,7 @@ func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
-	repo := infra.NewInmemRepo()
+	repo := shoptest.NewInmemRepo()
 	users := []domain.User{
 		repo.InsertUser(domain.User{Username: "user1"}),
 		repo.InsertUser(domain.User{Username: "user2"}),

@@ -1,4 +1,4 @@
-package infra
+package shoptest
 
 import (
 	"context"

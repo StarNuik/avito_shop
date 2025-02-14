@@ -31,7 +31,7 @@ func TestBuyItem_ItemDoesntExist_ErrNotFound(t *testing.T) {
 	}
 
 	repo := shoptest.NewInmemRepo()
-	user = repo.InsertUser(user)
+	user = repo.InsertUser(user, shoptest.DefaultBalance)
 
 	// Act
 	ctx := context.Background()
@@ -49,14 +49,14 @@ func TestBuyItem_NotEnoughCoins_ErrNotEnough(t *testing.T) {
 	user := domain.User{
 		Username: "username",
 	}
-	item := domain.InventoryEntry{
+	item := domain.InventoryItem{
 		Name:  "buy-me",
-		Price: 100,
+		Price: shoptest.DefaultBalance + 100,
 	}
 
 	repo := shoptest.NewInmemRepo()
 
-	user = repo.InsertUser(user)
+	user = repo.InsertUser(user, shoptest.DefaultBalance)
 	item = repo.InsertInventory(item)
 
 	// Act
@@ -75,20 +75,14 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 	user := domain.User{
 		Username: "username",
 	}
-	item := domain.InventoryEntry{
+	item := domain.InventoryItem{
 		Name:  "buy-me",
 		Price: 100,
 	}
-	balanceOp := domain.BalanceOperation{
-		User:   user.Id,
-		Delta:  1000,
-		Result: 1000,
-	}
 
 	repo := shoptest.NewInmemRepo()
-	user = repo.InsertUser(user)
+	user = repo.InsertUser(user, shoptest.DefaultBalance)
 	item = repo.InsertInventory(item)
-	balanceOp = repo.InsertBalanceOperation(balanceOp)
 
 	// Act
 	ctx := context.Background()
@@ -96,11 +90,9 @@ func TestBuyItem_HappyPath_PurchaseAdded(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Len(repo.Operations, 2) // +1 for the balanceOp
-	require.Equal(repo.Operations[1].Delta, -item.Price)
-	require.Equal(repo.Operations[1].Result, balanceOp.Result-item.Price)
+	require.Equal(repo.Coins[user.Id], shoptest.DefaultBalance-item.Price)
+
 	require.Len(repo.Purchases, 1)
-	require.Equal(repo.Purchases[0].User, user.Id)
+	require.Equal(repo.Purchases[0].UserId, user.Id)
 	require.Equal(repo.Purchases[0].Item, item.Id)
-	require.Equal(repo.Purchases[0].Operation, repo.Operations[1].Id)
 }

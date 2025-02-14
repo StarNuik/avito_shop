@@ -47,7 +47,7 @@ func TestSendCoins_TargetDoesntExist_ErrNotFound(t *testing.T) {
 	}
 
 	repo := shoptest.NewInmemRepo()
-	userFrom = repo.InsertUser(userFrom)
+	userFrom = repo.InsertUser(userFrom, shoptest.DefaultBalance)
 
 	// Act
 	ctx := context.Background()
@@ -64,15 +64,9 @@ func TestSendCoins_TargetIsUser_ErrNotAllowed(t *testing.T) {
 	user := domain.User{
 		Username: "username",
 	}
-	balanceOp := domain.BalanceOperation{
-		User:   user.Id,
-		Delta:  500,
-		Result: 500,
-	}
 
 	repo := shoptest.NewInmemRepo()
-	user = repo.InsertUser(user)
-	balanceOp = repo.InsertBalanceOperation(balanceOp)
+	user = repo.InsertUser(user, shoptest.DefaultBalance)
 
 	// Act
 	transferSum := int64(100)
@@ -93,16 +87,10 @@ func TestSendCoins_LowBalance_ErrNotEnough(t *testing.T) {
 	userTo := domain.User{
 		Username: "username2",
 	}
-	balanceOp := domain.BalanceOperation{
-		User:   userFrom.Id,
-		Delta:  50,
-		Result: 50,
-	}
 
 	repo := shoptest.NewInmemRepo()
-	userFrom = repo.InsertUser(userFrom)
-	userTo = repo.InsertUser(userTo)
-	balanceOp = repo.InsertBalanceOperation(balanceOp)
+	userFrom = repo.InsertUser(userFrom, 50)
+	userTo = repo.InsertUser(userTo, 50)
 
 	// Act
 	transferSum := int64(100)
@@ -123,16 +111,10 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 	userTo := domain.User{
 		Username: "username2",
 	}
-	balanceOp := domain.BalanceOperation{
-		User:   userFrom.Id,
-		Delta:  1000,
-		Result: 1000,
-	}
 
 	repo := shoptest.NewInmemRepo()
-	userFrom = repo.InsertUser(userFrom)
-	userTo = repo.InsertUser(userTo)
-	balanceOp = repo.InsertBalanceOperation(balanceOp)
+	userFrom = repo.InsertUser(userFrom, shoptest.DefaultBalance)
+	userTo = repo.InsertUser(userTo, shoptest.DefaultBalance)
 
 	// Act
 	transferSum := int64(100)
@@ -141,19 +123,14 @@ func TestSendCoins_HappyPath_TransferAdded(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Len(repo.Operations, 3) // +1 for the balanceOp
+
+	require.Equal(repo.Coins[userFrom.Id], shoptest.DefaultBalance-transferSum)
+	require.Equal(repo.Coins[userTo.Id], shoptest.DefaultBalance+transferSum)
+
 	require.Len(repo.Transfers, 1)
-
-	// require.Contains didn't work :(
-	srcOp := repo.Operations[repo.Transfers[0].SourceOp]
-	require.Equal(srcOp.User, userFrom.Id)
-	require.Equal(srcOp.Delta, -transferSum)
-	require.Equal(srcOp.Result, balanceOp.Result-transferSum)
-
-	destOp := repo.Operations[repo.Transfers[0].TargetOp]
-	require.Equal(destOp.User, userTo.Id)
-	require.Equal(destOp.Delta, transferSum)
-	require.Equal(destOp.Result, transferSum)
+	require.Equal(repo.Transfers[0].FromUser, userFrom.Id)
+	require.Equal(repo.Transfers[0].ToUser, userTo.Id)
+	require.Equal(repo.Transfers[0].Delta, transferSum)
 }
 
 func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
@@ -162,25 +139,10 @@ func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
 
 	repo := shoptest.NewInmemRepo()
 	users := []domain.User{
-		repo.InsertUser(domain.User{Username: "user1"}),
-		repo.InsertUser(domain.User{Username: "user2"}),
-		repo.InsertUser(domain.User{Username: "user3"}),
+		repo.InsertUser(domain.User{Username: "user1"}, shoptest.DefaultBalance),
+		repo.InsertUser(domain.User{Username: "user2"}, shoptest.DefaultBalance),
+		repo.InsertUser(domain.User{Username: "user3"}, shoptest.DefaultBalance),
 	}
-	repo.InsertBalanceOperation(domain.BalanceOperation{
-		User:   users[0].Id,
-		Delta:  1000,
-		Result: 1000,
-	})
-	repo.InsertBalanceOperation(domain.BalanceOperation{
-		User:   users[1].Id,
-		Delta:  1000,
-		Result: 1000,
-	})
-	repo.InsertBalanceOperation(domain.BalanceOperation{
-		User:   users[2].Id,
-		Delta:  1000,
-		Result: 1000,
-	})
 
 	// Act
 	ctx := context.Background()
@@ -195,12 +157,12 @@ func TestSendCoins_MultipleSends_CorrectResult(t *testing.T) {
 	// Assert
 	require.Len(repo.Transfers, 6)
 
-	balance0, _ := repo.UserBalance(ctx, users[0].Id)
-	require.Equal(balance0, int64(1000-2*50+100+500))
+	balance0, _ := repo.Coins[users[0].Id]
+	require.Equal(balance0, int64(shoptest.DefaultBalance-2*50+100+500))
 
-	balance1, _ := repo.UserBalance(ctx, users[1].Id)
-	require.Equal(balance1, int64(1000-2*100+50+500))
+	balance1, _ := repo.Coins[users[1].Id]
+	require.Equal(balance1, int64(shoptest.DefaultBalance-2*100+50+500))
 
-	balance2, _ := repo.UserBalance(ctx, users[2].Id)
-	require.Equal(balance2, int64(1000-2*500+50+100))
+	balance2, _ := repo.Coins[users[2].Id]
+	require.Equal(balance2, int64(shoptest.DefaultBalance-2*500+50+100))
 }

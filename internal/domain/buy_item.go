@@ -11,7 +11,13 @@ func BuyItem(ctx context.Context, repo ShopRepo, userId int64, itemName string) 
 		return err
 	}
 
-	balance, err := repo.UserBalance(ctx, userId)
+	tx, err := repo.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	balance, err := tx.UserBalanceLock(userId)
 	if err != nil {
 		return err
 	}
@@ -20,31 +26,17 @@ func BuyItem(ctx context.Context, repo ShopRepo, userId int64, itemName string) 
 		return ErrNotEnough
 	}
 
-	tx, err := repo.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	op := BalanceOperation{
-		User:   userId,
-		Delta:  -item.Price,
-		Result: balance - item.Price,
-	}
-	opId, err := tx.InsertBalanceOperation(op)
-	if err != nil {
-		return err
-	}
-
 	purchase := Purchase{
-		Item:      item.Id,
-		User:      userId,
-		Operation: opId,
+		Item:   item.Id,
+		UserId: userId,
+		Price:  item.Price,
 	}
 	_, err = tx.InsertPurchase(purchase)
 	if err != nil {
 		return err
 	}
+
+	err = tx.UpdateBalance(userId, balance-item.Price)
 
 	return tx.Commit()
 }

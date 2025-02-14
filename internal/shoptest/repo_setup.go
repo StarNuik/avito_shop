@@ -15,16 +15,15 @@ func NewShopRepoBuilder() *shopRepoBuilder {
 }
 
 func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHasher) {
-	err := repo.AddStagingUsers(hash)
+	err := repo.AddStagingUsers(hash, DefaultBalance)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	repo.InitBalances()
 	repo.AddStagingInventory()
 }
 
-func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher) error {
+func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher, startingBalance int64) error {
 	for _, user := range Users {
 		passwordHash, err := hash.Hash(user.Password)
 		if err != nil {
@@ -33,7 +32,7 @@ func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher) error {
 		repo.InsertUser(domain.User{
 			Username:     user.Password,
 			PasswordHash: passwordHash,
-		})
+		}, startingBalance)
 	}
 	return nil
 }
@@ -41,15 +40,5 @@ func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher) error {
 func (repo *shopRepoBuilder) AddStagingInventory() {
 	for _, item := range Inventory {
 		repo.InsertInventory(item)
-	}
-}
-
-func (repo *shopRepoBuilder) InitBalances() {
-	for userId := range repo.Users {
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   userId,
-			Delta:  DefaultBalance,
-			Result: DefaultBalance,
-		})
 	}
 }

@@ -9,13 +9,17 @@ import (
 func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, error) {
 	out := dto.InfoResponse{}
 
-	var err error
-	out.Coins, err = repo.UserBalance(ctx, userId)
+	tx, err := repo.Begin(ctx)
 	if err != nil {
 		return dto.InfoResponse{}, err
 	}
 
-	inventory, err := repo.InventoryInfo(ctx, userId)
+	out.Coins, err = tx.UserBalanceLock(userId)
+	if err != nil {
+		return dto.InfoResponse{}, err
+	}
+
+	inventory, err := tx.InventoryInfo(userId)
 	if err != nil {
 		return dto.InfoResponse{}, err
 	}
@@ -29,26 +33,24 @@ func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, e
 		out.Inventory = append(out.Inventory, dto)
 	}
 
-	balance, err := repo.BalanceInfo(ctx, userId)
+	transfers, err := tx.UserTransfers(userId)
 	if err != nil {
 		return dto.InfoResponse{}, err
 	}
 
 	out.CoinHistory.Received = make([]dto.BalanceDebitInfo, 0)
 	out.CoinHistory.Sent = make([]dto.BalanceCreditInfo, 0)
-	for _, op := range balance {
-		if op.Delta >= 0 {
-			dto := dto.BalanceDebitInfo{
-				FromUser: op.ForeignUsername,
-				Amount:   op.Delta,
-			}
-			out.CoinHistory.Received = append(out.CoinHistory.Received, dto)
-		} else {
-			dto := dto.BalanceCreditInfo{
-				ToUser: op.ForeignUsername,
-				Amount: -op.Delta,
-			}
-			out.CoinHistory.Sent = append(out.CoinHistory.Sent, dto)
+	for _, transfer := range transfers {
+		if transfer.FromUser == userId {
+			out.CoinHistory.Sent = append(out.CoinHistory.Sent, dto.BalanceCreditInfo{
+				ToUser: transfer.ToUsername,
+				Amount: transfer.Delta,
+			})
+		} else if transfer.ToUser == userId {
+			out.CoinHistory.Received = append(out.CoinHistory.Received, dto.BalanceDebitInfo{
+				FromUser: transfer.FromUsername,
+				Amount:   transfer.Delta,
+			})
 		}
 	}
 	slices.Reverse(out.CoinHistory.Received)

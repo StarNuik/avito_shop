@@ -32,7 +32,7 @@ func TestInfo_NewUser_NoErrors(t *testing.T) {
 		PasswordHash: "password",
 	}
 	repo := shoptest.NewInmemRepo()
-	user = repo.InsertUser(user)
+	user = repo.InsertUser(user, shoptest.DefaultBalance)
 
 	// Act
 	ctx := context.Background()
@@ -40,7 +40,7 @@ func TestInfo_NewUser_NoErrors(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Equal(have.Coins, int64(0))
+	require.Equal(have.Coins, shoptest.DefaultBalance)
 	require.Len(have.Inventory, 0)
 	require.Len(have.CoinHistory.Sent, 0)
 	require.Len(have.CoinHistory.Received, 0)
@@ -51,98 +51,45 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 	require := require.New(t)
 
 	repo := shoptest.NewInmemRepo()
-	user := repo.InsertUser(domain.User{Username: "username"})
+	user := repo.InsertUser(domain.User{Username: "username"}, shoptest.DefaultBalance)
 
 	usersForeign := []domain.User{
-		repo.InsertUser(domain.User{Username: "foreign1"}),
-		repo.InsertUser(domain.User{Username: "foreign2"}),
+		repo.InsertUser(domain.User{Username: "foreign1"}, shoptest.DefaultBalance),
+		repo.InsertUser(domain.User{Username: "foreign2"}, shoptest.DefaultBalance),
 	}
-	inventory := []domain.InventoryEntry{
-		repo.InsertInventory(domain.InventoryEntry{Name: "merch1", Price: 10}),
-		repo.InsertInventory(domain.InventoryEntry{Name: "merch2", Price: 100}),
-	}
-
-	balanceOps := []domain.BalanceOperation{
-		// init
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[0].Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[1].Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		// transfer 1
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -500,
-			Result: 500,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[0].Id,
-			Delta:  500,
-			Result: 1500,
-		}),
-		// transfer 2
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[1].Id,
-			Delta:  -200,
-			Result: 800,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  200,
-			Result: 700,
-		}),
-		// purchases
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -100,
-			Result: 600,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -10,
-			Result: 590,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -10,
-			Result: 580,
-		}),
+	inventory := []domain.InventoryItem{
+		repo.InsertInventory(domain.InventoryItem{Name: "merch1", Price: 10}),
+		repo.InsertInventory(domain.InventoryItem{Name: "merch2", Price: 100}),
 	}
 
 	_ = []domain.Transfer{
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[3].Id, TargetOp: balanceOps[4].Id,
+			FromUser: user.Id,
+			ToUser:   usersForeign[0].Id,
+			Delta:    500,
 		}),
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[5].Id, TargetOp: balanceOps[6].Id,
+			FromUser: usersForeign[1].Id,
+			ToUser:   user.Id,
+			Delta:    200,
 		}),
 	}
 
 	_ = []domain.Purchase{
 		repo.InsertPurchase(domain.Purchase{
-			Item:      inventory[1].Id,
-			User:      user.Id,
-			Operation: balanceOps[7].Id,
+			Item:   inventory[1].Id,
+			UserId: user.Id,
+			Price:  inventory[1].Price,
 		}),
 		repo.InsertPurchase(domain.Purchase{
-			Item:      inventory[0].Id,
-			User:      user.Id,
-			Operation: balanceOps[8].Id,
+			Item:   inventory[0].Id,
+			UserId: user.Id,
+			Price:  inventory[0].Price,
 		}),
 		repo.InsertPurchase(domain.Purchase{
-			Item:      inventory[0].Id,
-			User:      user.Id,
-			Operation: balanceOps[9].Id,
+			Item:   inventory[0].Id,
+			UserId: user.Id,
+			Price:  inventory[0].Price,
 		}),
 	}
 
@@ -152,7 +99,7 @@ func TestInfo_HappyPath_CorrectFields(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Equal(have.Coins, int64(580))
+	require.Equal(have.Coins, shoptest.DefaultBalance)
 
 	require.Len(have.CoinHistory.Sent, 1)
 	require.Equal(have.CoinHistory.Sent[0].Amount, int64(500))
@@ -178,88 +125,33 @@ func TestInfo_CoinHistoryOrder_NewFirst(t *testing.T) {
 	require := require.New(t)
 
 	repo := shoptest.NewInmemRepo()
-	user := repo.InsertUser(domain.User{Username: "username"})
+	user := repo.InsertUser(domain.User{Username: "username"}, shoptest.DefaultBalance)
 
 	usersForeign := []domain.User{
-		repo.InsertUser(domain.User{Username: "foreign1"}),
-		repo.InsertUser(domain.User{Username: "foreign2"}),
-	}
-
-	balanceOps := []domain.BalanceOperation{
-		// init
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[0].Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[1].Id,
-			Delta:  1000,
-			Result: 1000,
-		}),
-		// transfer 1 send
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -500,
-			Result: 500,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[0].Id,
-			Delta:  500,
-			Result: 1500,
-		}),
-		// transfer 2 receive
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[1].Id,
-			Delta:  -200,
-			Result: 800,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  200,
-			Result: 700,
-		}),
-		// transfer 3 send
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  -100,
-			Result: 600,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[0].Id,
-			Delta:  100,
-			Result: 1600,
-		}),
-		// transfer 4 receive
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   usersForeign[1].Id,
-			Delta:  -500,
-			Result: 300,
-		}),
-		repo.InsertBalanceOperation(domain.BalanceOperation{
-			User:   user.Id,
-			Delta:  500,
-			Result: 1100,
-		}),
+		repo.InsertUser(domain.User{Username: "foreign1"}, shoptest.DefaultBalance),
+		repo.InsertUser(domain.User{Username: "foreign2"}, shoptest.DefaultBalance),
 	}
 
 	_ = []domain.Transfer{
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[3].Id, TargetOp: balanceOps[4].Id,
+			FromUser: user.Id,
+			ToUser:   usersForeign[0].Id,
+			Delta:    500,
 		}),
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[5].Id, TargetOp: balanceOps[6].Id,
+			FromUser: usersForeign[1].Id,
+			ToUser:   user.Id,
+			Delta:    200,
 		}),
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[7].Id, TargetOp: balanceOps[8].Id,
+			FromUser: user.Id,
+			ToUser:   usersForeign[0].Id,
+			Delta:    100,
 		}),
 		repo.InsertTransfer(domain.Transfer{
-			SourceOp: balanceOps[9].Id, TargetOp: balanceOps[10].Id,
+			FromUser: usersForeign[1].Id,
+			ToUser:   user.Id,
+			Delta:    500,
 		}),
 	}
 
@@ -269,7 +161,7 @@ func TestInfo_CoinHistoryOrder_NewFirst(t *testing.T) {
 
 	// Assert
 	require.NoError(err)
-	require.Equal(have.Coins, int64(1100))
+	require.Equal(have.Coins, shoptest.DefaultBalance)
 
 	require.Len(have.CoinHistory.Sent, 2)
 	require.Equal(have.CoinHistory.Sent[0].Amount, int64(100))

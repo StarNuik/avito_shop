@@ -4,32 +4,27 @@ type User struct {
 	Id           int64
 	Username     string
 	PasswordHash string
-}
-
-type BalanceOperation struct {
-	Id     int64
-	User   int64
-	Delta  int64
-	Result int64
+	//Coins        int64
 }
 
 type Transfer struct {
 	Id       int64
-	SourceOp int64
-	TargetOp int64
+	Delta    int64
+	FromUser int64
+	ToUser   int64
 }
 
-type InventoryEntry struct {
+type InventoryItem struct {
 	Id    int64
 	Name  string
 	Price int64
 }
 
 type Purchase struct {
-	Id        int64
-	Item      int64
-	User      int64
-	Operation int64
+	Id     int64
+	Item   int64
+	UserId int64
+	Price  int64
 }
 
 type InventoryInfo struct {
@@ -37,7 +32,8 @@ type InventoryInfo struct {
 	Quantity int64
 }
 
-type BalanceInfo struct {
-	ForeignUsername string
-	Delta           int64
+type TransferInfo struct {
+	Transfer
+	FromUsername string
+	ToUsername   string
 }

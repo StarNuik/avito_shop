@@ -18,7 +18,7 @@ var Users = []user{
 	{Username: "user#2", Password: "user#2"},
 }
 
-var Inventory = []domain.InventoryEntry{
+var Inventory = []domain.InventoryItem{
 	{Name: "keychain", Price: 10},
 	{Name: "hoodie", Price: 100},
 }

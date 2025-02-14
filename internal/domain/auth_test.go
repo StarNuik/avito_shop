@@ -38,7 +38,7 @@ func TestAuth_IncorrectPassword_ErrNotFound(t *testing.T) {
 	user := repo.InsertUser(domain.User{
 		Username:     "username",
 		PasswordHash: "password",
-	})
+	}, shoptest.DefaultBalance)
 
 	// Act
 	ctx := context.Background()
@@ -61,7 +61,7 @@ func TestAuth_UserExists_ReturnsUserId(t *testing.T) {
 	user := repo.InsertUser(domain.User{
 		Username:     "username",
 		PasswordHash: "password",
-	})
+	}, shoptest.DefaultBalance)
 
 	// Act
 	ctx := context.Background()

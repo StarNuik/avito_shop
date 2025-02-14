@@ -15,16 +15,17 @@ func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo 
 		return err
 	}
 
+	tx, err := repo.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	if destUser.Id == userIdFrom {
 		return ErrNotAllowed
 	}
 
-	destBalance, err := repo.UserBalance(ctx, destUser.Id)
-	if err != nil {
-		return err
-	}
-
-	fromBalance, err := repo.UserBalance(ctx, userIdFrom)
+	fromBalance, destBalance, err := tx.UserPairBalanceLock(userIdFrom, destUser.Id)
 	if err != nil {
 		return err
 	}
@@ -33,37 +34,22 @@ func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo 
 		return ErrNotEnough
 	}
 
-	tx, err := repo.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	srcOp := BalanceOperation{
-		User:   userIdFrom,
-		Delta:  -transferSum,
-		Result: fromBalance - transferSum,
-	}
-	srcOpId, err := tx.InsertBalanceOperation(srcOp)
-	if err != nil {
-		return err
-	}
-
-	destOp := BalanceOperation{
-		User:   destUser.Id,
-		Delta:  transferSum,
-		Result: destBalance + transferSum,
-	}
-	destOpId, err := tx.InsertBalanceOperation(destOp)
-	if err != nil {
-		return err
-	}
-
 	transfer := Transfer{
-		SourceOp: srcOpId,
-		TargetOp: destOpId,
+		FromUser: userIdFrom,
+		ToUser:   destUser.Id,
+		Delta:    transferSum,
 	}
 	_, err = tx.InsertTransfer(transfer)
+	if err != nil {
+		return err
+	}
+
+	err = tx.UpdateBalance(destUser.Id, destBalance+transferSum)
+	if err != nil {
+		return err
+	}
+
+	err = tx.UpdateBalance(userIdFrom, fromBalance-transferSum)
 	if err != nil {
 		return err
 	}

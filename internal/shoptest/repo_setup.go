@@ -2,6 +2,7 @@ package shoptest
 
 import (
 	"github.com/avito_shop/internal/domain"
+	"log"
 )
 
 type shopRepoBuilder struct {
@@ -13,22 +14,30 @@ func NewShopRepoBuilder() *shopRepoBuilder {
 	return &shopRepoBuilder{inmem}
 }
 
-func (repo *shopRepoBuilder) AddStagingValues() {
-	repo.InsertUser(domain.User{
-		Id:           -1,
-		Username:     "admin",
-		PasswordHash: "admin",
-	})
-	repo.InsertUser(domain.User{
-		Id:           -2,
-		Username:     "test",
-		PasswordHash: "test",
-	})
+func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHash) {
+	err := repo.AddStagingUsers(hash)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	repo.InitBalances()
 
 	repo.InsertInventory(domain.InventoryEntry{Name: "hoodie", Price: 100})
 	repo.InsertInventory(domain.InventoryEntry{Name: "keychain", Price: 10})
+}
+
+func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHash) error {
+	for _, user := range Users {
+		passwordHash, err := hash.Hash(user.Password)
+		if err != nil {
+			return err
+		}
+		repo.InsertUser(domain.User{
+			Username:     user.Password,
+			PasswordHash: passwordHash,
+		})
+	}
+	return nil
 }
 
 func (repo *shopRepoBuilder) InitBalances() {

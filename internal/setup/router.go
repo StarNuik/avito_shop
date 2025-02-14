@@ -77,7 +77,7 @@ func Router() *gin.Engine {
 
 	// TODO: change this to pg repo
 	repo := shoptest.NewShopRepoBuilder()
-	repo.AddStagingValues()
+	repo.AddStagingValues(hash)
 
 	auth := jwtMiddleware(repo, log, hash)
 	router.Use(initJwtMiddleware(auth))

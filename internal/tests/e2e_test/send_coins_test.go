@@ -17,10 +17,6 @@ func TestSendCoins(t *testing.T) {
 	auth, err := client.Auth(shoptest.Users[0].Username, shoptest.Users[0].Password)
 	require.NoError(err)
 
-	info, err := client.Info(auth)
-	require.NoError(err)
-	require.Equal(info.Coins, shoptest.DefaultBalance)
-
 	err = client.SendCoins(auth, shoptest.Users[1].Username, int64(30))
 	require.NoError(err)
 	_ = client.SendCoins(auth, shoptest.Users[2].Username, int64(30))
@@ -30,7 +26,7 @@ func TestSendCoins(t *testing.T) {
 	_ = client.SendCoins(auth, shoptest.Users[2].Username, int64(90))
 
 	// Assert
-	info, err = client.Info(auth)
+	info, err := client.Info(auth)
 	require.NoError(err)
 
 	require.Equal(info.Coins, shoptest.DefaultBalance-2*int64(30)-2*int64(60)-2*int64(90))

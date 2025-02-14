@@ -21,9 +21,7 @@ func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHash) {
 	}
 
 	repo.InitBalances()
-
-	repo.InsertInventory(domain.InventoryEntry{Name: "hoodie", Price: 100})
-	repo.InsertInventory(domain.InventoryEntry{Name: "keychain", Price: 10})
+	repo.AddStagingInventory()
 }
 
 func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHash) error {
@@ -38,6 +36,12 @@ func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHash) error {
 		})
 	}
 	return nil
+}
+
+func (repo *shopRepoBuilder) AddStagingInventory() {
+	for _, item := range Inventory {
+		repo.InsertInventory(item)
+	}
 }
 
 func (repo *shopRepoBuilder) InitBalances() {

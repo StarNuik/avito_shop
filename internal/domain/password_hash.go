@@ -1,6 +1,6 @@
 package domain
 
-type PasswordHash interface {
-	Hash(string) (string, error)
-	Same(string, string) bool
+type PasswordHasher interface {
+	Hash(password string) (string, error)
+	Same(inPassword string, storedHash string) bool
 }

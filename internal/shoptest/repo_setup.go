@@ -14,7 +14,7 @@ func NewShopRepoBuilder() *shopRepoBuilder {
 	return &shopRepoBuilder{inmem}
 }
 
-func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHash) {
+func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHasher) {
 	err := repo.AddStagingUsers(hash)
 	if err != nil {
 		log.Panic(err)
@@ -24,7 +24,7 @@ func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHash) {
 	repo.AddStagingInventory()
 }
 
-func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHash) error {
+func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher) error {
 	for _, user := range Users {
 		passwordHash, err := hash.Hash(user.Password)
 		if err != nil {

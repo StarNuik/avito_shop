@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger, hash domain.PasswordHash) (interface{}, error) {
+func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger, hash domain.PasswordHasher) (interface{}, error) {
 	var req dto.AuthRequest
 	err := ctx.BindJSON(&req)
 	if err != nil || len(req.Username) == 0 || len(req.Password) == 0 {

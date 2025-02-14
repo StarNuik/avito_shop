@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func jwtMiddleware(repo domain.ShopRepo, logger infra.Logger, hash domain.PasswordHash) *jwt.GinJWTMiddleware {
+func jwtMiddleware(repo domain.ShopRepo, logger infra.Logger, hash domain.PasswordHasher) *jwt.GinJWTMiddleware {
 	nowUtc := func() time.Time {
 		return time.Now().UTC()
 	}
@@ -73,7 +73,7 @@ func Router() *gin.Engine {
 	router := gin.Default()
 
 	log := new(infra.FmtLogger)
-	hash := shoptest.NewNoopHash()
+	hash := new(infra.BcryptHasher)
 
 	// TODO: change this to pg repo
 	repo := shoptest.NewShopRepoBuilder()

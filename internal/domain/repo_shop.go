@@ -20,7 +20,7 @@ type ShopTx interface {
 	InventoryInfo(userId int64) ([]InventoryInfo, error)
 	UserTransfers(userId int64) ([]TransferInfo, error)
 
-	UpdateBalance(userId int64, amount int64) error
+	UpdateBalance(userId int64, balance int64) error
 
 	InsertTransfer(t Transfer) (int64, error)
 	InsertPurchase(p Purchase) (int64, error)

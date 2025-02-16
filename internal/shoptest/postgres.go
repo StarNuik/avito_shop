@@ -36,6 +36,16 @@ func (repo *shopRepoPostgres) InsertUser(user domain.User, balance int64) (int64
 	return userId, err
 }
 
+func (repo *shopRepoPostgres) InsertUserFast(user domain.User, balance int64) error {
+	ctx := context.Background()
+	_, err := repo.Exec(ctx, `
+        insert into Users (Username, PasswordHash, Coins)
+        values ($1, $2, $3)
+        `, user.Username, user.PasswordHash, balance)
+
+	return err
+}
+
 func (repo *shopRepoPostgres) InsertInventory(item domain.InventoryItem) (int64, error) {
 	ctx := context.Background()
 	row := repo.QueryRow(ctx, `

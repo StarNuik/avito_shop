@@ -13,6 +13,7 @@ func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, e
 	if err != nil {
 		return dto.InfoResponse{}, err
 	}
+	defer tx.Rollback()
 
 	out.Coins, err = tx.UserBalanceLock(userId)
 	if err != nil {
@@ -56,5 +57,5 @@ func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, e
 	slices.Reverse(out.CoinHistory.Received)
 	slices.Reverse(out.CoinHistory.Sent)
 
-	return out, nil
+	return out, tx.Commit()
 }

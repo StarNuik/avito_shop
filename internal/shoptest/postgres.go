@@ -35,3 +35,16 @@ func (repo *shopRepoPostgres) InsertUser(user domain.User, balance int64) (int64
 	err := row.Scan(&userId)
 	return userId, err
 }
+
+func (repo *shopRepoPostgres) InsertInventory(item domain.InventoryItem) (int64, error) {
+	ctx := context.Background()
+	row := repo.QueryRow(ctx, `
+        insert into Inventory (Name, Price)
+        values ($1, $2)
+        returning Id
+    `, item.Name, item.Price)
+
+	var userId int64
+	err := row.Scan(&userId)
+	return userId, err
+}

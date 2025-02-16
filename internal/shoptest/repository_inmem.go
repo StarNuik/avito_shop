@@ -149,7 +149,9 @@ func (tx *inmemTx) UserTransfers(userId int64) ([]domain.TransferInfo, error) {
 			continue
 		}
 		out = append(out, domain.TransferInfo{
-			Transfer:     transfer,
+			Delta:        transfer.Delta,
+			FromUser:     transfer.FromUser,
+			ToUser:       transfer.ToUser,
 			FromUsername: tx.Users[transfer.FromUser].Username,
 			ToUsername:   tx.Users[transfer.ToUser].Username,
 		})

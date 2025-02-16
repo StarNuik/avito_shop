@@ -1,12 +1,15 @@
 package setup
 
 import (
+	"context"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/avito_shop/internal/domain"
 	"github.com/avito_shop/internal/handler"
 	"github.com/avito_shop/internal/infra"
+	"github.com/avito_shop/internal/repository"
 	"github.com/avito_shop/internal/shoptest"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"log"
 	"time"
 )
@@ -68,16 +71,31 @@ func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopR
 	})
 }
 
+func connectDb(env env) (domain.ShopRepo, func() error) {
+	db, err := pgx.Connect(context.Background(), env.dbAddress)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	repo := repository.NewShopPostgres(db)
+
+	// TODO: remove this
+	shoptest.AddStagingValues(db, new(infra.BcryptHasher))
+
+	return repo, func() error { return db.Close(context.Background()) }
+}
+
 // Router may panic if it couldn't initialize any of router's internal components
 func Router() *gin.Engine {
+	env := GetEnv()
+
+	// todo defer close()
+	repo, _ := connectDb(env)
+
 	router := gin.Default()
 
 	log := new(infra.FmtLogger)
 	hash := new(infra.BcryptHasher)
-
-	// TODO: change this to pg repo
-	repo := shoptest.NewShopRepoBuilder()
-	repo.AddStagingValues(hash)
 
 	auth := jwtMiddleware(repo, log, hash)
 	router.Use(initJwtMiddleware(auth))

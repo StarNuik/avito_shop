@@ -33,7 +33,9 @@ type InventoryInfo struct {
 }
 
 type TransferInfo struct {
-	Transfer
+	Delta        int64
+	FromUser     int64
+	ToUser       int64
 	FromUsername string
 	ToUsername   string
 }

@@ -2,6 +2,7 @@ package shoptest
 
 import (
 	"github.com/avito_shop/internal/domain"
+	"github.com/jackc/pgx/v5"
 	"log"
 )
 
@@ -14,16 +15,23 @@ func NewShopRepoBuilder() *shopRepoBuilder {
 	return &shopRepoBuilder{inmem}
 }
 
-func (repo *shopRepoBuilder) AddStagingValues(hash domain.PasswordHasher) {
-	err := repo.AddStagingUsers(hash, DefaultBalance)
+func AddStagingValues(db *pgx.Conn, hash domain.PasswordHasher) {
+	repo := NewShopRepo(db)
+	for range 4 {
+		repo.Clear("Users")
+		repo.Clear("Purchases")
+		repo.Clear("Inventory")
+		repo.Clear("Transfers")
+	}
+	err := AddStagingUsers(repo, hash, DefaultBalance)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	repo.AddStagingInventory()
+	AddStagingInventory(repo)
 }
 
-func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher, startingBalance int64) error {
+func AddStagingUsers(repo *shopRepoPostgres, hash domain.PasswordHasher, startingBalance int64) error {
 	for _, user := range Users {
 		passwordHash, err := hash.Hash(user.Password)
 		if err != nil {
@@ -37,7 +45,7 @@ func (repo *shopRepoBuilder) AddStagingUsers(hash domain.PasswordHasher, startin
 	return nil
 }
 
-func (repo *shopRepoBuilder) AddStagingInventory() {
+func AddStagingInventory(repo *shopRepoPostgres) {
 	for _, item := range Inventory {
 		repo.InsertInventory(item)
 	}

@@ -140,22 +140,59 @@ func (tx *shopTxPostgres) UpdateBalance(userId int64, balance int64) error {
 	//}
 }
 
-func (tx *shopTxPostgres) InsertTransfer(t domain.Transfer) (int64, error) {
-	//TODO implement me
-	panic("implement me")
+func (tx *shopTxPostgres) InsertTransfer(transfer domain.Transfer) (int64, error) {
+	row := tx.QueryRow(tx.ctx, `
+		insert into Transfers(Delta, FromUser, ToUser)
+		values ($1, $2, $3)
+		returning Id
+	`, transfer.Delta, transfer.FromUser, transfer.ToUser)
+
+	var transferId int64
+	err := row.Scan(&transferId)
+	return transferId, err
+}
+
+func (tx *shopTxPostgres) InsertPurchase(purchase domain.Purchase) (int64, error) {
+	row := tx.QueryRow(tx.ctx, `
+		insert into Purchases(Price, Item, UserId)
+		values ($1, $2, $3)
+		returning Id
+	`, purchase.Price, purchase.Item, purchase.UserId)
+
+	var purchaseId int64
+	err := row.Scan(&purchaseId)
+	return purchaseId, err
 }
 
 func (tx *shopTxPostgres) UserTransfers(userId int64) ([]domain.TransferInfo, error) {
-	//TODO implement me
-	panic("implement me")
-}
+	rows, err := tx.Query(tx.ctx, `
+		select Delta, FromUser, ToUser, u1.Username FromUsername, u2.Username ToUsername
+		from Transfers t
+		    join Users u1
+		    on t.FromUser = u1.Id
+		    join Users u2
+		    on t.ToUser = u2.Id
+		where t.FromUser = $1 or t.ToUser = $1
+	`, userId)
+	if err != nil {
+		return nil, err
+	}
 
-func (tx *shopTxPostgres) InsertPurchase(p domain.Purchase) (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.TransferInfo])
 }
 
 func (tx *shopTxPostgres) InventoryInfo(userId int64) ([]domain.InventoryInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	rows, err := tx.Query(tx.ctx, `
+		select i.Name, count(p.Id) Quantity
+		from Purchases p
+		    join Inventory i
+		    on p.Item = i.Id
+		where p.UserId = $1
+		group by i.Id
+	`, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.InventoryInfo])
 }

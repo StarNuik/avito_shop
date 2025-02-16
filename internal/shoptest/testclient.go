@@ -1,20 +1,20 @@
-package client
+package shoptest
 
 import (
+	"github.com/avito_shop/internal/client"
 	"github.com/avito_shop/internal/infra"
 	"github.com/avito_shop/internal/setup"
 	"net/http"
 	"net/http/httptest"
 )
 
-// TODO: move to shoptest (currently not possible because `setup` depends on `shoptest`)
-func NewTestClient() Client {
+func NewTestClient() client.Client {
 	router := setup.Router()
 
-	return &Impl{
+	return &client.Impl{
 		HostUrl: "",
 		HttpEngine: infra.HttpEngine{
-			ErrHandler: UnmarshalError,
+			ErrHandler: client.UnmarshalError,
 			HttpHandler: func(req *http.Request) (*http.Response, error) {
 				recorder := httptest.NewRecorder()
 

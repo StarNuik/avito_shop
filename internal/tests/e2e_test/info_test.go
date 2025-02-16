@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"github.com/avito_shop/internal/client"
 	"github.com/avito_shop/internal/shoptest"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -12,7 +11,7 @@ func TestInfo(t *testing.T) {
 	require := require.New(t)
 
 	shoptest.ClearRepo()
-	client := client.NewTestClient()
+	client := shoptest.NewTestClient()
 
 	// Act
 	user := shoptest.User(0)

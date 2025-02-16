@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-const postgresUrl = "postgres://postgres:password@localhost:5432/shop"
+const postgresUrl = "postgres://postgres:password@localhost:5433/shop_test"
 
 var (
 	db *pgx.Conn

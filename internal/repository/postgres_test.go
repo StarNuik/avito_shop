@@ -164,37 +164,3 @@ func TestUpdateBalance(t *testing.T) {
 
 	require.Equal(haveBalance, wantBalance)
 }
-
-// todo
-//func TestInsertTransfersUserTransfers(t *testing.T) {
-//	// Arrange
-//	require := require.New(t)
-//
-//	testRepo := shoptest.NewShopRepo(db)
-//	err := testRepo.Clear("Users")
-//	require.NoError(err)
-//
-//	users := []int64{0, 0}
-//	users[0], err = testRepo.InsertUser(domain.User{}, 0)
-//	users[1], err = testRepo.InsertUser(domain.User{}, 0)
-//	require.NoError(err)
-//
-//	// Act
-//	ctx := context.Background()
-//	repo := repository.NewShopPostgres(db)
-//	tx, err := repo.Begin(ctx)
-//	require.NoError(err)
-//
-//	_, err = tx.InsertTransfer(domain.Transfer{
-//		Delta:    100,
-//		FromUser: users[0],
-//		ToUser:   users[1],
-//	})
-//	require.NoError(err)
-//
-//	// Assert
-//	haveBalance, err := tx.UserBalanceLock(userId)
-//	require.NoError(err)
-//
-//	require.Equal(haveBalance, wantBalance)
-//}

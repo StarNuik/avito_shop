@@ -39,7 +39,6 @@ func PackClaims(in interface{}) jwt.MapClaims {
 
 	bytes, err := json.Marshal(payload)
 	if err != nil {
-		// TODO
 		return jwt.MapClaims{}
 	}
 

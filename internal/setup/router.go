@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/avito_shop/internal/domain"
 	"github.com/avito_shop/internal/handler"
@@ -13,6 +14,10 @@ import (
 	"time"
 )
 
+var (
+	jwtSecret = "jG>ke8$%t[I|%-Sa5+O*3+];3ZX4}_WIAeld+(NWA2NPM~U*4t-3mWIRg>CEd'"
+)
+
 func jwtMiddleware(repo domain.ShopRepo, logger infra.Logger, hash domain.PasswordHasher) *jwt.GinJWTMiddleware {
 	nowUtc := func() time.Time {
 		return time.Now().UTC()
@@ -22,9 +27,8 @@ func jwtMiddleware(repo domain.ShopRepo, logger infra.Logger, hash domain.Passwo
 	}
 
 	params := jwt.GinJWTMiddleware{
-		Realm: "avito-shop",
-		// TODO
-		Key:           []byte("const: secret-key"),
+		Realm:         "avito-shop",
+		Key:           []byte(jwtSecret),
 		Timeout:       time.Hour,
 		MaxRefresh:    time.Hour,
 		IdentityKey:   "identity",
@@ -70,23 +74,22 @@ func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopR
 	})
 }
 
-func connectDb(env env) (domain.ShopRepo, func() error) {
+type engine struct {
+	*gin.Engine
+	db   *pgx.Conn
+	port int
+}
+
+// Router may panic if it couldn't initialize any of router's internal components
+func Router() *engine {
+	env := GetEnv()
+
 	db, err := pgx.Connect(context.Background(), env.DatabaseUrl)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	repo := repository.NewShopPostgres(db)
-
-	return repo, func() error { return db.Close(context.Background()) }
-}
-
-// Router may panic if it couldn't initialize any of router's internal components
-func Router() *gin.Engine {
-	env := GetEnv()
-
-	// todo defer close()
-	repo, _ := connectDb(env)
 
 	router := gin.Default()
 
@@ -98,5 +101,18 @@ func Router() *gin.Engine {
 
 	addRoutes(router, auth, repo, log)
 
-	return router
+	return &engine{
+		Engine: router,
+		db:     db,
+		port:   env.ServerPort,
+	}
+}
+
+func (r *engine) Run() error {
+	addr := fmt.Sprintf(":%d", r.port)
+	return r.Engine.Run(addr)
+}
+
+func (r *engine) Close() error {
+	return r.db.Close(context.Background())
 }

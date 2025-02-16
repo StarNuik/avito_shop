@@ -14,7 +14,6 @@ func BuyItem(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) {
 		return
 	}
 
-	// TODO: remove magic string?
 	itemName := ctx.Param("item")
 	if len(itemName) == 0 {
 		ctx.JSON(400, dto.ErrorResponse{"empty item name"})

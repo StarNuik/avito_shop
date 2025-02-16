@@ -10,5 +10,6 @@ import (
 
 func main() {
 	router := setup.Router()
+	defer router.Close()
 	_ = router.Run()
 }

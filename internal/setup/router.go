@@ -7,7 +7,6 @@ import (
 	"github.com/avito_shop/internal/handler"
 	"github.com/avito_shop/internal/infra"
 	"github.com/avito_shop/internal/repository"
-	"github.com/avito_shop/internal/shoptest"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"log"
@@ -72,15 +71,12 @@ func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopR
 }
 
 func connectDb(env env) (domain.ShopRepo, func() error) {
-	db, err := pgx.Connect(context.Background(), env.dbAddress)
+	db, err := pgx.Connect(context.Background(), env.DatabaseUrl)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	repo := repository.NewShopPostgres(db)
-
-	// TODO: remove this
-	shoptest.AddStagingValues(db, new(infra.BcryptHasher))
 
 	return repo, func() error { return db.Close(context.Background()) }
 }

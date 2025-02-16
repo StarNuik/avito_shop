@@ -1,16 +1,18 @@
 package shoptest
 
-import "github.com/avito_shop/internal/domain"
+import (
+	"fmt"
+	"github.com/avito_shop/internal/domain"
+	"github.com/avito_shop/internal/dto"
+)
 
 const (
 	HostUrl        = "http://localhost:8080"
 	DefaultBalance = int64(1000)
+	UserCount      = 100_000
 )
 
-type user struct {
-	Username string
-	Password string
-}
+type user dto.AuthRequest
 
 var Users = []user{
 	{Username: "user#0", Password: "user#0"},
@@ -29,4 +31,15 @@ var Inventory = []domain.InventoryItem{
 	{Name: "socks", Price: 10},
 	{Name: "wallet", Price: 50},
 	{Name: "pink-hoody", Price: 500},
+}
+
+func User(idx int) user {
+	return user{
+		Username: fmt.Sprintf("user#%d", idx),
+		Password: fmt.Sprintf("password#%d", idx),
+	}
+}
+
+func AuthRequest(idx int) dto.AuthRequest {
+	return dto.AuthRequest(User(idx))
 }

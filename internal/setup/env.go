@@ -8,14 +8,14 @@ import (
 )
 
 type env struct {
-	dbAddress string
-	servePort int
+	DatabaseUrl string
+	ServerPort  int
 }
 
 func GetEnv() env {
 	out := env{}
-	out.servePort = envAtoiOr("SERVER_PORT", 8080)
-	out.dbAddress = envBuildDatabaseUrl()
+	out.ServerPort = envAtoiOr("SERVER_PORT", 8080)
+	out.DatabaseUrl = envBuildDatabaseUrl()
 	return out
 }
 

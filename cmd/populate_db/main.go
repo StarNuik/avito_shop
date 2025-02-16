@@ -30,17 +30,16 @@ func main() {
 	}
 	fmt.Println("Inventory added")
 
-	for idx := range 100_000 {
-		username := fmt.Sprintf("user#%d", idx)
-		password := fmt.Sprintf("password#%d", idx)
+	for idx := range shoptest.UserCount {
+		userInfo := shoptest.User(idx)
 
-		passwordHash, err := hasher.HashFast(password)
+		passwordHash, err := hasher.HashFast(userInfo.Password)
 		if err != nil {
 			log.Panic(err)
 		}
 
 		user := domain.User{
-			Username:     username,
+			Username:     userInfo.Username,
 			PasswordHash: passwordHash,
 		}
 		err = repo.InsertUserFast(user, shoptest.DefaultBalance)

@@ -12,10 +12,12 @@ func TestBuyItem(t *testing.T) {
 	// Arrange
 	require := require.New(t)
 
+	shoptest.ClearRepo()
 	client := client.NewTestClient()
 
 	// Act
-	auth, err := client.Auth(shoptest.Users[0].Username, shoptest.Users[0].Password)
+	user := shoptest.User(0)
+	auth, err := client.Auth(user.Username, user.Password)
 	require.NoError(err)
 
 	err = client.BuyItem(auth, shoptest.Inventory[0].Name)

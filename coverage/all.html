@@ -1,0 +1,1724 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>populate_db: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/avito_shop/cmd/populate_db/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/avito_shop/internal/client/client.go (95.2%)</option>
+				
+				<option value="file2">github.com/avito_shop/internal/client/error.go (16.7%)</option>
+				
+				<option value="file3">github.com/avito_shop/internal/domain/auth.go (87.5%)</option>
+				
+				<option value="file4">github.com/avito_shop/internal/domain/buy_item.go (83.3%)</option>
+				
+				<option value="file5">github.com/avito_shop/internal/domain/error.go (100.0%)</option>
+				
+				<option value="file6">github.com/avito_shop/internal/domain/info.go (89.3%)</option>
+				
+				<option value="file7">github.com/avito_shop/internal/domain/send_coins.go (81.5%)</option>
+				
+				<option value="file8">github.com/avito_shop/internal/handler/auth.go (61.8%)</option>
+				
+				<option value="file9">github.com/avito_shop/internal/handler/buy_item.go (47.1%)</option>
+				
+				<option value="file10">github.com/avito_shop/internal/handler/info.go (46.2%)</option>
+				
+				<option value="file11">github.com/avito_shop/internal/handler/send_coins.go (50.0%)</option>
+				
+				<option value="file12">github.com/avito_shop/internal/infra/bcrypt_hasher.go (25.0%)</option>
+				
+				<option value="file13">github.com/avito_shop/internal/infra/fmt_logger.go (0.0%)</option>
+				
+				<option value="file14">github.com/avito_shop/internal/infra/http_engine.go (67.6%)</option>
+				
+				<option value="file15">github.com/avito_shop/internal/infra/jwt.go (71.4%)</option>
+				
+				<option value="file16">github.com/avito_shop/internal/repository/postgres.go (83.3%)</option>
+				
+				<option value="file17">github.com/avito_shop/internal/setup/env.go (91.3%)</option>
+				
+				<option value="file18">github.com/avito_shop/internal/setup/router.go (85.7%)</option>
+				
+				<option value="file19">github.com/avito_shop/internal/shoptest/noop_hasher.go (66.7%)</option>
+				
+				<option value="file20">github.com/avito_shop/internal/shoptest/postgres.go (82.4%)</option>
+				
+				<option value="file21">github.com/avito_shop/internal/shoptest/repo_clear.go (81.8%)</option>
+				
+				<option value="file22">github.com/avito_shop/internal/shoptest/repo_setup.go (0.0%)</option>
+				
+				<option value="file23">github.com/avito_shop/internal/shoptest/repository_inmem.go (91.5%)</option>
+				
+				<option value="file24">github.com/avito_shop/internal/shoptest/testclient.go (100.0%)</option>
+				
+				<option value="file25">github.com/avito_shop/internal/shoptest/var.go (100.0%)</option>
+				
+				<option value="file26">github.com/avito_shop/main.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/infra"
+        "github.com/avito_shop/internal/shoptest"
+        "github.com/jackc/pgx/v5"
+        "log"
+)
+
+func main() <span class="cov0" title="0">{
+        dbUrl := "postgres://postgres:password@localhost:5432/shop"
+        db, err := pgx.Connect(context.Background(), dbUrl)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic(err)
+        }</span>
+        <span class="cov0" title="0">repo := shoptest.NewShopRepo(db)
+        hasher := infra.BcryptHasher{}
+
+        repo.Clear("Purchases")
+        repo.Clear("Transfers")
+
+        for _, item := range shoptest.Inventory </span><span class="cov0" title="0">{
+                _, err := repo.InsertInventory(item)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Panic(err)
+                }</span>
+        }
+        <span class="cov0" title="0">fmt.Println("Inventory added")
+
+        for idx := range shoptest.UserCount </span><span class="cov0" title="0">{
+                userInfo := shoptest.User(idx)
+
+                passwordHash, err := hasher.HashFast(userInfo.Password)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Panic(err)
+                }</span>
+
+                <span class="cov0" title="0">user := domain.User{
+                        Username:     userInfo.Username,
+                        PasswordHash: passwordHash,
+                }
+                err = repo.InsertUserFast(user, shoptest.DefaultBalance)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Panic(err)
+                }</span>
+
+                <span class="cov0" title="0">if idx%1000 == 0 </span><span class="cov0" title="0">{
+                        fmt.Printf("Insert users: %d%%\n", idx/1000)
+                }</span>
+        }
+        <span class="cov0" title="0">fmt.Println("Users added")</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package client
+
+import (
+        "github.com/avito_shop/internal/dto"
+        "github.com/avito_shop/internal/infra"
+        "net/http"
+)
+
+type Client interface {
+        Auth(username string, password string) (string, error)
+        Info(authToken string) (dto.InfoResponse, error)
+        SendCoins(authToken string, toUsername string, amount int64) error
+        BuyItem(authToken string, itemName string) error
+}
+
+var _ Client = (*Impl)(nil)
+
+type Impl struct {
+        infra.HttpEngine
+        HostUrl string
+}
+
+func New(hostUrl string) Client <span class="cov0" title="0">{
+        return &amp;Impl{
+                HostUrl: hostUrl,
+                HttpEngine: infra.HttpEngine{
+                        ErrHandler: UnmarshalError,
+                },
+        }
+}</span>
+
+func (c *Impl) url(suffix string) string <span class="cov8" title="1">{
+        return c.HostUrl + suffix
+}</span>
+
+func (c *Impl) Auth(username string, password string) (string, error) <span class="cov8" title="1">{
+        out := dto.AuthResponse{}
+
+        url := c.url("/api/auth")
+        req := dto.AuthRequest{Username: username, Password: password}
+        err := c.Do(http.MethodPost, url, nil, req, &amp;out)
+        return out.Token, err
+}</span>
+
+func (c *Impl) Info(token string) (dto.InfoResponse, error) <span class="cov8" title="1">{
+        out := dto.InfoResponse{}
+
+        url := c.url("/api/info")
+        headers := map[string]string{
+                "Authorization": "Bearer" + " " + token,
+        }
+        err := c.Do(http.MethodGet, url, headers, nil, &amp;out)
+        return out, err
+}</span>
+
+func (c *Impl) SendCoins(token string, toUsername string, amount int64) error <span class="cov8" title="1">{
+        url := c.url("/api/sendCoin")
+        headers := map[string]string{
+                "Authorization": "Bearer" + " " + token,
+        }
+        req := dto.SendCoinRequest{ToUser: toUsername, Amount: amount}
+        err := c.Do(http.MethodPost, url, headers, req, nil)
+        return err
+}</span>
+
+func (c *Impl) BuyItem(token string, itemName string) error <span class="cov8" title="1">{
+        url := c.url("/api/buy/" + itemName)
+        headers := map[string]string{
+                "Authorization": "Bearer" + " " + token,
+        }
+        err := c.Do(http.MethodGet, url, headers, nil, nil)
+        return err
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package client
+
+import (
+        "encoding/json"
+        "fmt"
+        "github.com/avito_shop/internal/dto"
+)
+
+var (
+        ErrUnauthorized   = fmt.Errorf("unauthorized")
+        ErrInternalServer = fmt.Errorf("internal server error")
+        ErrBadRequest     = fmt.Errorf("bad request")
+)
+
+func UnmarshalError(status int, body []byte) error <span class="cov8" title="1">{
+        if status/100 == 2 </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">dto := dto.ErrorResponse{}
+        err := json.Unmarshal(body, &amp;dto)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">switch status </span>{
+        case 400:<span class="cov0" title="0">
+                err = ErrBadRequest</span>
+        case 401:<span class="cov0" title="0">
+                err = ErrUnauthorized</span>
+        case 500:<span class="cov0" title="0">
+                err = ErrInternalServer</span>
+        default:<span class="cov0" title="0">
+                return fmt.Errorf("UnmarshalError: http status code not supported")</span>
+        }
+
+        <span class="cov0" title="0">return fmt.Errorf("%w: %s", err, dto.Errors)</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package domain
+
+import (
+        "context"
+        "github.com/avito_shop/internal/dto"
+)
+
+// Auth may return ErrNotFound
+func Auth(ctx context.Context, repo ShopRepo, hash PasswordHasher, req dto.AuthRequest) (dto.JwtPayload, error) <span class="cov8" title="1">{
+        user, err := repo.User(ctx, req.Username)
+        if err != nil </span><span class="cov8" title="1">{
+                return dto.JwtPayload{}, err
+        }</span>
+
+        <span class="cov8" title="1">if req.Username != user.Username </span><span class="cov0" title="0">{
+                return dto.JwtPayload{}, ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">if !hash.Same(req.Password, user.PasswordHash) </span><span class="cov8" title="1">{
+                return dto.JwtPayload{}, ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">return dto.JwtPayload{
+                UserId: user.Id,
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package domain
+
+import (
+        "context"
+)
+
+// BuyItem may return these errors: NotEnough, NotFound
+func BuyItem(ctx context.Context, repo ShopRepo, userId int64, itemName string) error <span class="cov8" title="1">{
+        item, err := repo.InventoryItem(ctx, itemName)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">tx, err := repo.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer tx.Rollback()
+
+        balance, err := tx.UserBalanceLock(userId)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if item.Price &gt; balance </span><span class="cov8" title="1">{
+                return ErrNotEnough
+        }</span>
+
+        <span class="cov8" title="1">purchase := Purchase{
+                Item:   item.Id,
+                UserId: userId,
+                Price:  item.Price,
+        }
+        _, err = tx.InsertPurchase(purchase)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">err = tx.UpdateBalance(userId, balance-item.Price)
+
+        return tx.Commit()</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package domain
+
+import (
+        "errors"
+        "fmt"
+)
+
+var (
+        ErrNotFound   error = fmt.Errorf("not found")
+        ErrNotEnough        = fmt.Errorf("not enough")
+        ErrNotAllowed       = fmt.Errorf("not allowed")
+)
+
+func IsDomainError(err error) bool <span class="cov8" title="1">{
+        return errors.Is(err, ErrNotFound) ||
+                errors.Is(err, ErrNotAllowed) ||
+                errors.Is(err, ErrNotEnough)
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package domain
+
+import (
+        "context"
+        "github.com/avito_shop/internal/dto"
+        "slices"
+)
+
+func Info(ctx context.Context, repo ShopRepo, userId int64) (dto.InfoResponse, error) <span class="cov8" title="1">{
+        out := dto.InfoResponse{}
+
+        tx, err := repo.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return dto.InfoResponse{}, err
+        }</span>
+        <span class="cov8" title="1">defer tx.Rollback()
+
+        out.Coins, err = tx.UserBalanceLock(userId)
+        if err != nil </span><span class="cov8" title="1">{
+                return dto.InfoResponse{}, err
+        }</span>
+
+        <span class="cov8" title="1">inventory, err := tx.InventoryInfo(userId)
+        if err != nil </span><span class="cov0" title="0">{
+                return dto.InfoResponse{}, err
+        }</span>
+
+        <span class="cov8" title="1">out.Inventory = make([]dto.InventoryInfo, 0, len(inventory))
+        for _, item := range inventory </span><span class="cov8" title="1">{
+                dto := dto.InventoryInfo{
+                        Type:     item.Name,
+                        Quantity: item.Quantity,
+                }
+                out.Inventory = append(out.Inventory, dto)
+        }</span>
+
+        <span class="cov8" title="1">transfers, err := tx.UserTransfers(userId)
+        if err != nil </span><span class="cov0" title="0">{
+                return dto.InfoResponse{}, err
+        }</span>
+
+        <span class="cov8" title="1">out.CoinHistory.Received = make([]dto.BalanceDebitInfo, 0)
+        out.CoinHistory.Sent = make([]dto.BalanceCreditInfo, 0)
+        for _, transfer := range transfers </span><span class="cov8" title="1">{
+                if transfer.FromUser == userId </span><span class="cov8" title="1">{
+                        out.CoinHistory.Sent = append(out.CoinHistory.Sent, dto.BalanceCreditInfo{
+                                ToUser: transfer.ToUsername,
+                                Amount: transfer.Delta,
+                        })
+                }</span> else<span class="cov8" title="1"> if transfer.ToUser == userId </span><span class="cov8" title="1">{
+                        out.CoinHistory.Received = append(out.CoinHistory.Received, dto.BalanceDebitInfo{
+                                FromUser: transfer.FromUsername,
+                                Amount:   transfer.Delta,
+                        })
+                }</span>
+        }
+        <span class="cov8" title="1">slices.Reverse(out.CoinHistory.Received)
+        slices.Reverse(out.CoinHistory.Sent)
+
+        return out, tx.Commit()</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package domain
+
+import (
+        "context"
+)
+
+// SendCoins may send these errors: ErrNotAllowed, ErrNotEnough, ErrNotFound
+func SendCoins(ctx context.Context, repo ShopRepo, userIdFrom int64, usernameTo string, transferSum int64) error <span class="cov8" title="1">{
+        if transferSum &lt;= 0 </span><span class="cov8" title="1">{
+                return ErrNotAllowed
+        }</span>
+
+        <span class="cov8" title="1">destUser, err := repo.User(ctx, usernameTo)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">tx, err := repo.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer tx.Rollback()
+
+        if destUser.Id == userIdFrom </span><span class="cov8" title="1">{
+                return ErrNotAllowed
+        }</span>
+
+        <span class="cov8" title="1">fromBalance, destBalance, err := tx.UserPairBalanceLock(userIdFrom, destUser.Id)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if transferSum &gt; fromBalance </span><span class="cov8" title="1">{
+                return ErrNotEnough
+        }</span>
+
+        <span class="cov8" title="1">transfer := Transfer{
+                FromUser: userIdFrom,
+                ToUser:   destUser.Id,
+                Delta:    transferSum,
+        }
+        _, err = tx.InsertTransfer(transfer)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">err = tx.UpdateBalance(destUser.Id, destBalance+transferSum)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">err = tx.UpdateBalance(userIdFrom, fromBalance-transferSum)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return tx.Commit()</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package handler
+
+import (
+        "encoding/json"
+        "fmt"
+        jwt "github.com/appleboy/gin-jwt/v2"
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/dto"
+        "github.com/avito_shop/internal/infra"
+        "github.com/gin-gonic/gin"
+)
+
+func Authenticator(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger, hash domain.PasswordHasher) (interface{}, error) <span class="cov8" title="1">{
+        var req dto.AuthRequest
+        err := ctx.BindJSON(&amp;req)
+        if err != nil || len(req.Username) == 0 || len(req.Password) == 0 </span><span class="cov0" title="0">{
+                ctx.AbortWithStatus(400)
+                return nil, fmt.Errorf("incorrect AuthRequest json")
+        }</span>
+
+        <span class="cov8" title="1">resp, err := domain.Auth(ctx, repo, hash, req)
+        if domain.IsDomainError(err) </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("incorrect username or password")
+        }</span> else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
+                // TODO: trace id
+                log.LogError(err)
+                ctx.AbortWithStatus(500)
+                return nil, fmt.Errorf("server error")
+        }</span>
+
+        <span class="cov8" title="1">return &amp;resp, nil</span>
+}
+
+func PackClaims(in interface{}) jwt.MapClaims <span class="cov8" title="1">{
+        payload, ok := in.(*dto.JwtPayload)
+        if !ok </span><span class="cov0" title="0">{
+                return jwt.MapClaims{}
+        }</span>
+
+        <span class="cov8" title="1">bytes, err := json.Marshal(payload)
+        if err != nil </span><span class="cov0" title="0">{
+                return jwt.MapClaims{}
+        }</span>
+
+        <span class="cov8" title="1">return jwt.MapClaims{
+                infra.IdentityKey: payload.UserId,
+                "_payload":        string(bytes),
+        }</span>
+}
+
+func UnpackClaims(ctx *gin.Context) interface{} <span class="cov8" title="1">{
+        claims := jwt.ExtractClaims(ctx)
+        obj, ok := claims["_payload"]
+        if !ok </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">str, ok := obj.(string)
+        if !ok </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">var payload dto.JwtPayload
+        err := json.Unmarshal([]byte(str), &amp;payload)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">return &amp;payload</span>
+}
+
+func Unauthorized(c *gin.Context, code int, message string) <span class="cov0" title="0">{
+        resp := dto.ErrorResponse{
+                Errors: message,
+        }
+        c.JSON(code, resp)
+}</span>
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package handler
+
+import (
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/dto"
+        "github.com/avito_shop/internal/infra"
+        "github.com/gin-gonic/gin"
+)
+
+func BuyItem(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) <span class="cov8" title="1">{
+        jwt, err := infra.JwtPayload(ctx)
+        if err != nil {
+</span>                ctx.JSON(401, dto.ErrorResponse{"incorrect jwt"})
+                return
+        }
+</span>
+        ite<span class="cov8" title="1">mName := ctx.Param("item")
+        if len(itemName) == 0 {
+</span>                ctx.JSON(400, dto.ErrorResponse{"empty item name"})
+                return
+        }
+</span>
+        err<span class="cov8" title="1"> = domain.BuyItem(ctx, repo, jwt.UserId, itemName)
+        if domain.IsDomainError(err) {
+</span>                ctx.JSON(400, dto.ErrorResponse{err.Error()})
+                return
+        } el</span>se if<span class="cov8" title="1"> err != nil {
+</span>                // TODO: trace id
+                log.LogError(err)
+                ctx.JSON(500, dto.ErrorResponse{"server error"})
+                return
+        }
+</span>
+        ctx<span class="cov8" title="1">.Status(200)
+</span>}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package handler
+
+import (
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/dto"
+        "github.com/avito_shop/internal/infra"
+        "github.com/gin-gonic/gin"
+)
+
+func Info(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) <span class="cov8" title="1">{
+        jwt, err := infra.JwtPayload(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                ctx.JSON(401, dto.ErrorResponse{"incorrect jwt"})
+                return
+        }</span>
+
+        <span class="cov8" title="1">out, err := domain.Info(ctx, repo, jwt.UserId)
+        if domain.IsDomainError(err) </span><span class="cov0" title="0">{
+                ctx.JSON(400, dto.ErrorResponse{err.Error()})
+                return
+        }</span> else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
+                // TODO: trace id
+                log.LogError(err)
+                ctx.JSON(500, dto.ErrorResponse{"server error"})
+                return
+        }</span>
+
+        <span class="cov8" title="1">ctx.JSON(200, out)</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package handler
+
+import (
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/dto"
+        "github.com/avito_shop/internal/infra"
+        "github.com/gin-gonic/gin"
+)
+
+func SendCoins(ctx *gin.Context, repo domain.ShopRepo, log infra.Logger) <span class="cov8" title="1">{
+        jwt, err := infra.JwtPayload(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                ctx.JSON(401, dto.ErrorResponse{"incorrect jwt"})
+                return
+        }</span>
+
+        <span class="cov8" title="1">var req dto.SendCoinRequest
+        err = ctx.BindJSON(&amp;req)
+        if err != nil </span><span class="cov0" title="0">{
+                ctx.JSON(400, dto.ErrorResponse{"incorrect SendCoinRequest json"})
+                return
+        }</span>
+
+        <span class="cov8" title="1">err = domain.SendCoins(ctx, repo, jwt.UserId, req.ToUser, req.Amount)
+        if domain.IsDomainError(err) </span><span class="cov0" title="0">{
+                ctx.JSON(400, dto.ErrorResponse{err.Error()})
+                return
+        }</span> else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
+                // TODO: trace id
+                log.LogError(err)
+                ctx.JSON(500, dto.ErrorResponse{"server error"})
+                return
+        }</span>
+
+        <span class="cov8" title="1">ctx.Status(200)</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package infra
+
+import (
+        "github.com/avito_shop/internal/domain"
+        "golang.org/x/crypto/bcrypt"
+)
+
+type BcryptHasher struct{}
+
+var _ domain.PasswordHasher = (*BcryptHasher)(nil)
+
+func (*BcryptHasher) Hash(password string) (string, error) <span class="cov0" title="0">{
+        return hash(password, bcrypt.DefaultCost)
+}</span>
+
+func (*BcryptHasher) Same(inPassword string, storedHash string) bool <span class="cov8" title="1">{
+        err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(inPassword))
+        return err == nil
+}</span>
+
+func (*BcryptHasher) HashFast(password string) (string, error) <span class="cov0" title="0">{
+        return hash(password, bcrypt.MinCost)
+}</span>
+
+func hash(password string, cost int) (string, error) <span class="cov0" title="0">{
+        out, err := bcrypt.GenerateFromPassword([]byte(password), cost)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov0" title="0">return string(out), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package infra
+
+import "log"
+
+type FmtLogger struct{}
+
+var _ Logger = (*FmtLogger)(nil)
+
+func (_ *FmtLogger) Log(message string) <span class="cov0" title="0">{
+        log.Println(message)
+}</span>
+
+func (_ *FmtLogger) LogError(err error) <span class="cov0" title="0">{
+        log.Println(err)
+}</span>
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package infra
+
+import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+)
+
+type ErrHandler func(int, []byte) error
+type HttpHandler func(req *http.Request) (*http.Response, error)
+
+type HttpEngine struct {
+        ErrHandler  ErrHandler
+        HttpHandler HttpHandler
+}
+
+func (e *HttpEngine) Do(method string, url string, headers map[string]string, in any, out any) error <span class="cov8" title="1">{
+        reqJson, err := json.Marshal(in)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">reader := bytes.NewReader(reqJson)
+        request, err := http.NewRequest(method, url, reader)
+
+        for key, value := range headers </span><span class="cov8" title="1">{
+                request.Header.Set(key, value)
+        }</span>
+
+        <span class="cov8" title="1">httpHandler := e.getHttpHandler()
+        response, err := httpHandler(request)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer response.Body.Close()
+
+        body, err := io.ReadAll(response.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">errHandler := e.getErrHandler()
+        if err = errHandler(response.StatusCode, body); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if out == nil </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">err = json.Unmarshal(body, out)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (e *HttpEngine) getErrHandler() ErrHandler <span class="cov8" title="1">{
+        if e.ErrHandler == nil </span><span class="cov0" title="0">{
+                return defaultErrHandler
+        }</span>
+        <span class="cov8" title="1">return e.ErrHandler</span>
+}
+
+func defaultErrHandler(code int, _ []byte) error <span class="cov0" title="0">{
+        if code/100 != 2 </span><span class="cov0" title="0">{
+                return fmt.Errorf("error: %d", code)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (e *HttpEngine) getHttpHandler() HttpHandler <span class="cov8" title="1">{
+        if e.HttpHandler == nil </span><span class="cov0" title="0">{
+                return defaultHttpHandler
+        }</span>
+        <span class="cov8" title="1">return e.HttpHandler</span>
+}
+
+func defaultHttpHandler(request *http.Request) (*http.Response, error) <span class="cov0" title="0">{
+        return http.DefaultClient.Do(request)
+}</span>
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package infra
+
+import (
+        "fmt"
+        "github.com/avito_shop/internal/dto"
+        "github.com/gin-gonic/gin"
+)
+
+const IdentityKey = "identity"
+
+var (
+        ErrJwtPayload error = fmt.Errorf("jwt payload error")
+)
+
+func JwtPayload(ctx *gin.Context) (*dto.JwtPayload, error) <span class="cov8" title="1">{
+        any, ok := ctx.Get(IdentityKey)
+        if !ok </span><span class="cov0" title="0">{
+                return nil, ErrJwtPayload
+        }</span>
+
+        <span class="cov8" title="1">dto, ok := any.(*dto.JwtPayload)
+        if !ok </span><span class="cov0" title="0">{
+                return nil, ErrJwtPayload
+        }</span>
+
+        <span class="cov8" title="1">return dto, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package repository
+
+import (
+        "context"
+        "errors"
+        "github.com/avito_shop/internal/domain"
+        "github.com/jackc/pgx/v5"
+)
+
+type shopRepoPostgres struct {
+        *pgx.Conn
+}
+
+type shopTxPostgres struct {
+        pgx.Tx
+        ctx context.Context
+}
+
+var _ (domain.ShopRepo) = &amp;shopRepoPostgres{}
+var _ (domain.ShopTx) = &amp;shopTxPostgres{}
+
+func NewShopPostgres(db *pgx.Conn) domain.ShopRepo <span class="cov8" title="1">{
+        return &amp;shopRepoPostgres{
+                Conn: db,
+        }
+}</span>
+
+func (repo *shopRepoPostgres) User(ctx context.Context, username string) (domain.User, error) <span class="cov8" title="1">{
+        row := repo.QueryRow(ctx, `
+                select Id, Username, PasswordHash
+                from Users
+                where Username = $1
+        `, username)
+
+        out := domain.User{}
+        err := row.Scan(&amp;out.Id, &amp;out.Username, &amp;out.PasswordHash)
+        if errors.Is(err, pgx.ErrNoRows) </span><span class="cov0" title="0">{
+                return out, domain.ErrNotFound
+        }</span>
+        <span class="cov8" title="1">return out, err</span>
+}
+
+func (repo *shopRepoPostgres) InventoryItem(ctx context.Context, itemName string) (domain.InventoryItem, error) <span class="cov8" title="1">{
+        row := repo.QueryRow(ctx, `
+                select Id, Name, Price
+                from Inventory
+                where Name = $1
+        `, itemName)
+
+        out := domain.InventoryItem{}
+        err := row.Scan(&amp;out.Id, &amp;out.Name, &amp;out.Price)
+        if errors.Is(err, pgx.ErrNoRows) </span><span class="cov0" title="0">{
+                return out, domain.ErrNotFound
+        }</span>
+        <span class="cov8" title="1">return out, err</span>
+}
+
+func (repo *shopRepoPostgres) Begin(ctx context.Context) (domain.ShopTx, error) <span class="cov8" title="1">{
+        tx, err := repo.Conn.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;shopTxPostgres{
+                Tx:  tx,
+                ctx: ctx,
+        }, nil</span>
+}
+
+func (tx *shopTxPostgres) Commit() error <span class="cov8" title="1">{
+        return tx.Tx.Commit(tx.ctx)
+}</span>
+
+func (tx *shopTxPostgres) Rollback() error <span class="cov8" title="1">{
+        return tx.Tx.Rollback(tx.ctx)
+}</span>
+
+func (tx *shopTxPostgres) UserBalanceLock(userId int64) (int64, error) <span class="cov8" title="1">{
+        row := tx.QueryRow(tx.ctx, `
+                select Coins
+                from Users
+                where Id = $1
+                for update
+        `, userId)
+
+        var out int64
+        err := row.Scan(&amp;out)
+        if errors.Is(err, pgx.ErrNoRows) </span><span class="cov0" title="0">{
+                return out, domain.ErrNotFound
+        }</span>
+        <span class="cov8" title="1">return out, err</span>
+}
+
+func (tx *shopTxPostgres) UserPairBalanceLock(fromUser int64, toUser int64) (int64, int64, error) <span class="cov8" title="1">{
+        rows, err := tx.Query(tx.ctx, `
+                select Id, Coins
+                from Users
+                where Id = $1 or Id = $2
+                for update
+        `, fromUser, toUser)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, 0, err
+        }</span>
+
+        <span class="cov8" title="1">cache := make(map[int64]int64)
+        for rows.Next() </span><span class="cov8" title="1">{
+                userId, balance := int64(0), int64(0)
+
+                err := rows.Scan(&amp;userId, &amp;balance)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, 0, err
+                }</span>
+
+                <span class="cov8" title="1">cache[userId] = balance</span>
+        }
+
+        <span class="cov8" title="1">fromBalance, ok := cache[fromUser]
+        if !ok </span><span class="cov0" title="0">{
+                return 0, 0, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">toBalance, ok := cache[toUser]
+        if !ok </span><span class="cov0" title="0">{
+                return 0, 0, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">return fromBalance, toBalance, nil</span>
+}
+
+func (tx *shopTxPostgres) UpdateBalance(userId int64, balance int64) error <span class="cov8" title="1">{
+        _, err := tx.Exec(tx.ctx, `
+                update Users
+                set Coins = $2
+                where Id = $1
+        `, userId, balance)
+
+        return err
+        //if tag.RowsAffected() == 0 {
+        //        return domain.ErrNotFound
+        //}
+}</span>
+
+func (tx *shopTxPostgres) InsertTransfer(transfer domain.Transfer) (int64, error) <span class="cov8" title="1">{
+        row := tx.QueryRow(tx.ctx, `
+                insert into Transfers(Delta, FromUser, ToUser)
+                values ($1, $2, $3)
+                returning Id
+        `, transfer.Delta, transfer.FromUser, transfer.ToUser)
+
+        var transferId int64
+        err := row.Scan(&amp;transferId)
+        return transferId, err
+}</span>
+
+func (tx *shopTxPostgres) InsertPurchase(purchase domain.Purchase) (int64, error) <span class="cov8" title="1">{
+        row := tx.QueryRow(tx.ctx, `
+                insert into Purchases(Price, Item, UserId)
+                values ($1, $2, $3)
+                returning Id
+        `, purchase.Price, purchase.Item, purchase.UserId)
+
+        var purchaseId int64
+        err := row.Scan(&amp;purchaseId)
+        return purchaseId, err
+}</span>
+
+func (tx *shopTxPostgres) UserTransfers(userId int64) ([]domain.TransferInfo, error) <span class="cov8" title="1">{
+        rows, err := tx.Query(tx.ctx, `
+                select Delta, FromUser, ToUser, u1.Username FromUsername, u2.Username ToUsername
+                from Transfers t
+                    join Users u1
+                    on t.FromUser = u1.Id
+                    join Users u2
+                    on t.ToUser = u2.Id
+                where t.FromUser = $1 or t.ToUser = $1
+        `, userId)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return pgx.CollectRows(rows, pgx.RowToStructByName[domain.TransferInfo])</span>
+}
+
+func (tx *shopTxPostgres) InventoryInfo(userId int64) ([]domain.InventoryInfo, error) <span class="cov8" title="1">{
+        rows, err := tx.Query(tx.ctx, `
+                select i.Name, count(p.Id) Quantity
+                from Purchases p
+                    join Inventory i
+                    on p.Item = i.Id
+                where p.UserId = $1
+                group by i.Id
+        `, userId)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return pgx.CollectRows(rows, pgx.RowToStructByName[domain.InventoryInfo])</span>
+}
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package setup
+
+import (
+        "fmt"
+        "log"
+        "os"
+        "strconv"
+)
+
+type env struct {
+        DatabaseUrl string
+        ServerPort  int
+}
+
+func GetEnv() env <span class="cov8" title="1">{
+        out := env{}
+        out.ServerPort = envAtoiOr("SERVER_PORT", 8080)
+        out.DatabaseUrl = envBuildDatabaseUrl()
+        return out
+}</span>
+
+func envBuildDatabaseUrl() string <span class="cov8" title="1">{
+        password := envOrPanic("DATABASE_PASSWORD")
+
+        user := envOr("DATABASE_USER", "postgres")
+        host := envOr("DATABASE_HOST", "localhost")
+        port := envOr("DATABASE_PORT", "5432")
+        dbName := envOr("DATABASE_NAME", user)
+        return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbName)
+}</span>
+
+func envOrPanic(key string) string <span class="cov8" title="1">{
+        value := envOr(key, "")
+        if len(value) == 0 </span><span class="cov0" title="0">{
+                log.Panic(fmt.Errorf("env variable not set: %s", key))
+        }</span>
+        <span class="cov8" title="1">return value</span>
+}
+
+func envAtoiOr(key string, defaultValue int) int <span class="cov8" title="1">{
+        value := envOr(key, strconv.Itoa(defaultValue))
+
+        out, err := strconv.Atoi(value)
+        if err != nil </span><span class="cov0" title="0">{
+                return defaultValue
+        }</span>
+        <span class="cov8" title="1">return out</span>
+}
+
+func envOr(key string, defaultValue string) string <span class="cov8" title="1">{
+        value, ok := os.LookupEnv(key)
+        if !ok || len(value) == 0 </span><span class="cov8" title="1">{
+                return defaultValue
+        }</span>
+        <span class="cov8" title="1">return value</span>
+}
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package setup
+
+import (
+        "context"
+        "fmt"
+        jwt "github.com/appleboy/gin-jwt/v2"
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/handler"
+        "github.com/avito_shop/internal/infra"
+        "github.com/avito_shop/internal/repository"
+        "github.com/gin-gonic/gin"
+        "github.com/jackc/pgx/v5"
+        "log"
+        "time"
+)
+
+var (
+        jwtSecret = "jG&gt;ke8$%t[I|%-Sa5+O*3+];3ZX4}_WIAeld+(NWA2NPM~U*4t-3mWIRg&gt;CEd'"
+)
+
+func jwtMiddleware(repo domain.ShopRepo, logger infra.Logger, hash domain.PasswordHasher) *jwt.GinJWTMiddleware <span class="cov8" title="1">{
+        nowUtc := func() time.Time </span><span class="cov8" title="1">{
+                return time.Now().UTC()
+        }</span>
+        <span class="cov8" title="1">authenticator := func(ctx *gin.Context) (interface{}, error) </span><span class="cov8" title="1">{
+                return handler.Authenticator(ctx, repo, logger, hash)
+        }</span>
+
+        <span class="cov8" title="1">params := jwt.GinJWTMiddleware{
+                Realm:         "avito-shop",
+                Key:           []byte(jwtSecret),
+                Timeout:       time.Hour,
+                MaxRefresh:    time.Hour,
+                IdentityKey:   "identity",
+                TokenLookup:   "header: Authorization, query: token, cookie: jwt",
+                TokenHeadName: "Bearer",
+                TimeFunc:      nowUtc,
+
+                PayloadFunc:     handler.PackClaims,
+                IdentityHandler: handler.UnpackClaims,
+                Authenticator:   authenticator,
+                //Authorizator:    nil,
+                Unauthorized: handler.Unauthorized,
+        }
+
+        auth, err := jwt.New(&amp;params)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic(err)
+        }</span>
+        <span class="cov8" title="1">return auth</span>
+}
+
+func initJwtMiddleware(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc <span class="cov8" title="1">{
+        return func(context *gin.Context) </span><span class="cov8" title="1">{
+                errInit := authMiddleware.MiddlewareInit()
+                if errInit != nil </span><span class="cov0" title="0">{
+                        log.Panic("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
+                }</span>
+        }
+}
+
+func addRoutes(engine *gin.Engine, auth *jwt.GinJWTMiddleware, repo domain.ShopRepo, log infra.Logger) <span class="cov8" title="1">{
+        engine.POST("/api/auth", auth.LoginHandler)
+
+        authRequired := engine.Group("/api", auth.MiddlewareFunc())
+        authRequired.GET("/info", func(ctx *gin.Context) </span><span class="cov8" title="1">{
+                handler.Info(ctx, repo, log)
+        }</span>)
+        <span class="cov8" title="1">authRequired.GET("/buy/:item", func(ctx *gin.Context) </span><span class="cov8" title="1">{
+                handler.BuyItem(ctx, repo, log)
+        }</span>)
+        <span class="cov8" title="1">authRequired.POST("/sendCoin", func(ctx *gin.Context) </span><span class="cov8" title="1">{
+                handler.SendCoins(ctx, repo, log)
+        }</span>)
+}
+
+type engine struct {
+        *gin.Engine
+        db   *pgx.Conn
+        port int
+}
+
+// Router may panic if it couldn't initialize any of router's internal components
+func Router() *engine <span class="cov8" title="1">{
+        env := GetEnv()
+
+        db, err := pgx.Connect(context.Background(), env.DatabaseUrl)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic(err)
+        }</span>
+
+        <span class="cov8" title="1">repo := repository.NewShopPostgres(db)
+
+        router := gin.Default()
+
+        log := new(infra.FmtLogger)
+        hash := new(infra.BcryptHasher)
+
+        auth := jwtMiddleware(repo, log, hash)
+        router.Use(initJwtMiddleware(auth))
+
+        addRoutes(router, auth, repo, log)
+
+        return &amp;engine{
+                Engine: router,
+                db:     db,
+                port:   env.ServerPort,
+        }</span>
+}
+
+func (r *engine) Run() error <span class="cov0" title="0">{
+        addr := fmt.Sprintf(":%d", r.port)
+        return r.Engine.Run(addr)
+}</span>
+
+func (r *engine) Close() error {
+        return r.db.Close(context.Background())
+}
+</pre>
+		
+		<pre class="file" id="file19" style="display: none">package shoptest
+
+import "github.com/avito_shop/internal/domain"
+
+type noopHasher struct{}
+
+var _ domain.PasswordHasher = (*noopHasher)(nil)
+
+func NewNoopHash() domain.PasswordHasher <span class="cov8" title="1">{
+        return &amp;noopHasher{}
+}</span>
+
+func (_ *noopHasher) Hash(password string) (string, error) <span class="cov0" title="0">{
+        return password, nil
+}</span>
+
+func (_ *noopHasher) Same(inPassword string, storedHash string) bool <span class="cov8" title="1">{
+        return inPassword == storedHash
+}</span>
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package shoptest
+
+import (
+        "context"
+        "fmt"
+        "github.com/avito_shop/internal/domain"
+        "github.com/jackc/pgx/v5"
+)
+
+type shopRepoPostgres struct {
+        *pgx.Conn
+}
+
+func NewShopRepo(db *pgx.Conn) *shopRepoPostgres <span class="cov8" title="1">{
+        return &amp;shopRepoPostgres{
+                Conn: db,
+        }
+}</span>
+
+func (repo *shopRepoPostgres) Clear(table string) error <span class="cov8" title="1">{
+        ctx := context.Background()
+        _, err := repo.Exec(ctx, fmt.Sprintf("delete from %s", table))
+        return err
+}</span>
+
+func (repo *shopRepoPostgres) InsertUser(user domain.User, balance int64) (int64, error) <span class="cov8" title="1">{
+        ctx := context.Background()
+        row := repo.QueryRow(ctx, `
+        insert into Users (Username, PasswordHash, Coins)
+        values ($1, $2, $3)
+        returning Id
+        `, user.Username, user.PasswordHash, balance)
+
+        var userId int64
+        err := row.Scan(&amp;userId)
+        return userId, err
+}</span>
+
+func (repo *shopRepoPostgres) InsertUserFast(user domain.User, balance int64) error <span class="cov0" title="0">{
+        ctx := context.Background()
+        _, err := repo.Exec(ctx, `
+        insert into Users (Username, PasswordHash, Coins)
+        values ($1, $2, $3)
+        `, user.Username, user.PasswordHash, balance)
+
+        return err
+}</span>
+
+func (repo *shopRepoPostgres) InsertInventory(item domain.InventoryItem) (int64, error) <span class="cov8" title="1">{
+        ctx := context.Background()
+        row := repo.QueryRow(ctx, `
+        insert into Inventory (Name, Price)
+        values ($1, $2)
+        returning Id
+    `, item.Name, item.Price)
+
+        var userId int64
+        err := row.Scan(&amp;userId)
+        return userId, err
+}</span>
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package shoptest
+
+import (
+        "context"
+        "fmt"
+        "github.com/avito_shop/internal/setup"
+        "github.com/jackc/pgx/v5"
+)
+
+func ClearRepo() error <span class="cov8" title="1">{
+        env := setup.GetEnv()
+        db, err := pgx.Connect(context.Background(), env.DatabaseUrl)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">repo := NewShopRepo(db)
+        repo.Clear("Purchases")
+        repo.Clear("Transfers")
+
+        tag, err := db.Exec(context.Background(), `
+        update Users
+        set Coins = $1
+    `, DefaultBalance)
+
+        if tag.RowsAffected() != UserCount </span><span class="cov0" title="0">{
+                return fmt.Errorf("RowsAffected != UserCount")
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file22" style="display: none">package shoptest
+
+import (
+        "github.com/avito_shop/internal/domain"
+        "github.com/jackc/pgx/v5"
+        "log"
+)
+
+type shopRepoBuilder struct {
+        *inmemRepository
+}
+
+func NewShopRepoBuilder() *shopRepoBuilder <span class="cov0" title="0">{
+        inmem := NewInmemRepo()
+        return &amp;shopRepoBuilder{inmem}
+}</span>
+
+func AddStagingValues(db *pgx.Conn, hash domain.PasswordHasher) <span class="cov0" title="0">{
+        repo := NewShopRepo(db)
+        for range 4 </span><span class="cov0" title="0">{
+                repo.Clear("Users")
+                repo.Clear("Purchases")
+                repo.Clear("Inventory")
+                repo.Clear("Transfers")
+        }</span>
+        <span class="cov0" title="0">err := AddStagingUsers(repo, hash, DefaultBalance)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic(err)
+        }</span>
+
+        <span class="cov0" title="0">AddStagingInventory(repo)</span>
+}
+
+func AddStagingUsers(repo *shopRepoPostgres, hash domain.PasswordHasher, startingBalance int64) error <span class="cov0" title="0">{
+        for _, user := range Users </span><span class="cov0" title="0">{
+                passwordHash, err := hash.Hash(user.Password)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">repo.InsertUser(domain.User{
+                        Username:     user.Password,
+                        PasswordHash: passwordHash,
+                }, startingBalance)</span>
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+
+func AddStagingInventory(repo *shopRepoPostgres) <span class="cov0" title="0">{
+        for _, item := range Inventory </span><span class="cov0" title="0">{
+                repo.InsertInventory(item)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file23" style="display: none">package shoptest
+
+import (
+        "context"
+        "github.com/avito_shop/internal/domain"
+)
+
+type inmemRepository struct {
+        Users     map[int64]domain.User
+        Transfers map[int64]domain.Transfer
+        Inventory map[int64]domain.InventoryItem
+        Purchases map[int64]domain.Purchase
+        Coins     map[int64]int64
+}
+
+var _ domain.ShopRepo = (*inmemRepository)(nil)
+
+func NewInmemRepo() *inmemRepository <span class="cov8" title="1">{
+        return &amp;inmemRepository{
+                Users:     make(map[int64]domain.User),
+                Coins:     make(map[int64]int64),
+                Transfers: make(map[int64]domain.Transfer),
+                Inventory: make(map[int64]domain.InventoryItem),
+                Purchases: make(map[int64]domain.Purchase),
+        }
+}</span>
+
+func (repo *inmemRepository) InsertUser(user domain.User, coins int64) domain.User <span class="cov8" title="1">{
+        id := int64(len(repo.Users))
+        user.Id = id
+        repo.Users[id] = user
+        repo.Coins[id] = coins
+        return user
+}</span>
+
+func (repo *inmemRepository) InsertInventory(item domain.InventoryItem) domain.InventoryItem <span class="cov8" title="1">{
+        id := int64(len(repo.Inventory))
+        item.Id = id
+        repo.Inventory[id] = item
+        return item
+}</span>
+
+func (repo *inmemRepository) InsertTransfer(transfer domain.Transfer) domain.Transfer <span class="cov8" title="1">{
+        tx, _ := repo.Begin(context.Background())
+        id, _ := tx.InsertTransfer(transfer)
+        _ = tx.Commit()
+        transfer.Id = id
+        return transfer
+}</span>
+
+func (repo *inmemRepository) InsertPurchase(purchase domain.Purchase) domain.Purchase <span class="cov8" title="1">{
+        tx, _ := repo.Begin(context.Background())
+        id, _ := tx.InsertPurchase(purchase)
+        _ = tx.Commit()
+        purchase.Id = id
+        return purchase
+}</span>
+
+func (repo *inmemRepository) User(_ context.Context, username string) (domain.User, error) <span class="cov8" title="1">{
+        for _, user := range repo.Users </span><span class="cov8" title="1">{
+                if user.Username == username </span><span class="cov8" title="1">{
+                        return user, nil
+                }</span>
+        }
+
+        <span class="cov8" title="1">return domain.User{}, domain.ErrNotFound</span>
+}
+
+func (repo *inmemRepository) InventoryItem(_ context.Context, itemName string) (domain.InventoryItem, error) <span class="cov8" title="1">{
+        for _, item := range repo.Inventory </span><span class="cov8" title="1">{
+                if item.Name == itemName </span><span class="cov8" title="1">{
+                        return item, nil
+                }</span>
+        }
+
+        <span class="cov8" title="1">return domain.InventoryItem{}, domain.ErrNotFound</span>
+}
+
+func (repo *inmemRepository) Begin(_ context.Context) (domain.ShopTx, error) <span class="cov8" title="1">{
+        return &amp;inmemTx{repo, false}, nil
+}</span>
+
+type inmemTx struct {
+        *inmemRepository
+        commit bool
+}
+
+var _ domain.ShopTx = (*inmemTx)(nil)
+
+// inmemRepository does not implement locking
+func (tx *inmemTx) UserBalanceLock(userId int64) (int64, error) <span class="cov8" title="1">{
+        if _, ok := tx.Users[userId]; !ok </span><span class="cov8" title="1">{
+                return 0, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">return tx.Coins[userId], nil</span>
+}
+
+// inmemRepository does not implement locking
+func (tx *inmemTx) UserPairBalanceLock(fromUser int64, toUser int64) (int64, int64, error) <span class="cov8" title="1">{
+        if _, ok := tx.Users[fromUser]; !ok </span><span class="cov0" title="0">{
+                return 0, 0, domain.ErrNotFound
+        }</span>
+        <span class="cov8" title="1">if _, ok := tx.Users[toUser]; !ok </span><span class="cov0" title="0">{
+                return 0, 0, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">return tx.Coins[fromUser], tx.Coins[toUser], nil</span>
+}
+
+// select group sum()
+func (tx *inmemTx) InventoryInfo(userId int64) ([]domain.InventoryInfo, error) <span class="cov8" title="1">{
+        if _, ok := tx.Users[userId]; !ok </span><span class="cov0" title="0">{
+                return nil, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">tmp := make(map[string]int64)
+
+        for _, item := range tx.Purchases </span><span class="cov8" title="1">{
+                if item.UserId != userId </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">inventory := tx.Inventory[item.Item]
+                tmp[inventory.Name]++</span>
+        }
+
+        <span class="cov8" title="1">out := make([]domain.InventoryInfo, 0, len(tmp))
+        for name, quantity := range tmp </span><span class="cov8" title="1">{
+                item := domain.InventoryInfo{
+                        Name:     name,
+                        Quantity: quantity,
+                }
+                out = append(out, item)
+        }</span>
+
+        <span class="cov8" title="1">return out, nil</span>
+}
+
+func (tx *inmemTx) UserTransfers(userId int64) ([]domain.TransferInfo, error) <span class="cov8" title="1">{
+        if _, ok := tx.Users[userId]; !ok </span><span class="cov0" title="0">{
+                return nil, domain.ErrNotFound
+        }</span>
+
+        <span class="cov8" title="1">out := []domain.TransferInfo{}
+        for id := range len(tx.Transfers) </span><span class="cov8" title="1">{
+                transfer := tx.Transfers[int64(id)]
+                if transfer.FromUser != userId &amp;&amp;
+                        transfer.ToUser != userId </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">out = append(out, domain.TransferInfo{
+                        Delta:        transfer.Delta,
+                        FromUser:     transfer.FromUser,
+                        ToUser:       transfer.ToUser,
+                        FromUsername: tx.Users[transfer.FromUser].Username,
+                        ToUsername:   tx.Users[transfer.ToUser].Username,
+                })</span>
+        }
+        <span class="cov8" title="1">return out, nil</span>
+}
+
+func (tx *inmemTx) UpdateBalance(userId int64, amount int64) error <span class="cov8" title="1">{
+        tx.Coins[userId] = amount
+        return nil
+}</span>
+
+func (tx *inmemTx) InsertTransfer(t domain.Transfer) (int64, error) <span class="cov8" title="1">{
+        id := int64(len(tx.Transfers))
+        t.Id = id
+        tx.Transfers[id] = t
+        return id, nil
+}</span>
+
+func (tx *inmemTx) InsertPurchase(p domain.Purchase) (int64, error) <span class="cov8" title="1">{
+        id := int64(len(tx.Purchases))
+        p.Id = id
+        tx.Purchases[id] = p
+        return id, nil
+}</span>
+
+func (tx *inmemTx) Commit() error <span class="cov8" title="1">{
+        //tx.commit = true
+        return nil
+}</span>
+
+func (tx *inmemTx) Rollback() error <span class="cov8" title="1">{
+        //if !tx.commit {
+        //        panic("not implemented")
+        //}
+        return nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file24" style="display: none">package shoptest
+
+import (
+        "github.com/avito_shop/internal/client"
+        "github.com/avito_shop/internal/infra"
+        "github.com/avito_shop/internal/setup"
+        "net/http"
+        "net/http/httptest"
+)
+
+func NewTestClient() client.Client <span class="cov8" title="1">{
+        router := setup.Router()
+
+        return &amp;client.Impl{
+                HostUrl: "",
+                HttpEngine: infra.HttpEngine{
+                        ErrHandler: client.UnmarshalError,
+                        HttpHandler: func(req *http.Request) (*http.Response, error) </span><span class="cov8" title="1">{
+                                recorder := httptest.NewRecorder()
+
+                                router.ServeHTTP(recorder, req)
+
+                                return recorder.Result(), nil
+                        }</span>,
+                },
+        }
+}
+</pre>
+		
+		<pre class="file" id="file25" style="display: none">package shoptest
+
+import (
+        "fmt"
+        "github.com/avito_shop/internal/domain"
+        "github.com/avito_shop/internal/dto"
+)
+
+const (
+        HostUrl        = "http://localhost:8080"
+        DefaultBalance = int64(1000)
+        UserCount      = 100_000
+)
+
+type user dto.AuthRequest
+
+var Users = []user{
+        {Username: "user#0", Password: "user#0"},
+        {Username: "user#1", Password: "user#1"},
+        {Username: "user#2", Password: "user#2"},
+}
+
+var Inventory = []domain.InventoryItem{
+        {Name: "t-shirt", Price: 80},
+        {Name: "cup", Price: 20},
+        {Name: "book", Price: 50},
+        {Name: "pen", Price: 10},
+        {Name: "powerbank", Price: 200},
+        {Name: "hoody", Price: 300},
+        {Name: "umbrella", Price: 200},
+        {Name: "socks", Price: 10},
+        {Name: "wallet", Price: 50},
+        {Name: "pink-hoody", Price: 500},
+}
+
+func User(idx int) user <span class="cov8" title="1">{
+        return user{
+                Username: fmt.Sprintf("user#%d", idx),
+                Password: fmt.Sprintf("password#%d", idx),
+        }
+}</span>
+
+func AuthRequest(idx int) dto.AuthRequest <span class="cov8" title="1">{
+        return dto.AuthRequest(User(idx))
+}</span>
+</pre>
+		
+		<pre class="file" id="file26" style="display: none">package main
+
+import (
+        "github.com/avito_shop/internal/setup"
+)
+
+// testing:
+// go test -v -coverpkg=./... -coverprofile=./all.cov ./...
+// go tool cover -html=all.cov
+
+func main() <span class="cov0" title="0">{
+        router := setup.Router()
+        defer router.Close()
+        </span>_ = router.Run()
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
